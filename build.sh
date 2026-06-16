@@ -7,7 +7,11 @@ echo "Enabling Flutter Web..."
 flutter config --enable-web
 
 echo "Building Flutter Web application..."
-flutter build web --release
+if [ -z "$BASE_URL" ]; then
+  flutter build web --release
+else
+  flutter build web --release --dart-define=BASE_URL=$BASE_URL
+fi
 
 echo "Preparing Vercel output directory..."
 mkdir -p public
