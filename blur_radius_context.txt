@@ -1,0 +1,403 @@
+lib/features/mood/presentation/mood_checkin_screen.dart-                        ),
+lib/features/mood/presentation/mood_checkin_screen.dart-                        boxShadow: [
+lib/features/mood/presentation/mood_checkin_screen.dart-                          if (isSelected)
+lib/features/mood/presentation/mood_checkin_screen.dart-                            BoxShadow(
+lib/features/mood/presentation/mood_checkin_screen.dart-                              color: mood['color'].withOpacity(0.2),
+lib/features/mood/presentation/mood_checkin_screen.dart:                              blurRadius: 10,
+lib/features/mood/presentation/mood_checkin_screen.dart-                              offset: const Offset(0, 4),
+lib/features/mood/presentation/mood_checkin_screen.dart-                            ),
+lib/features/mood/presentation/mood_checkin_screen.dart-                        ],
+lib/features/mood/presentation/mood_checkin_screen.dart-                      ),
+lib/features/mood/presentation/mood_checkin_screen.dart-                      child: Row(
+--
+lib/features/mood/presentation/mood_history_screen.dart-          padding: const EdgeInsets.symmetric(vertical: 10),
+lib/features/mood/presentation/mood_history_screen.dart-          decoration: BoxDecoration(
+lib/features/mood/presentation/mood_history_screen.dart-            color: isSelected ? Colors.white : Colors.transparent,
+lib/features/mood/presentation/mood_history_screen.dart-            borderRadius: BorderRadius.circular(8),
+lib/features/mood/presentation/mood_history_screen.dart-            boxShadow: isSelected
+lib/features/mood/presentation/mood_history_screen.dart:                ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)]
+lib/features/mood/presentation/mood_history_screen.dart-                : null,
+lib/features/mood/presentation/mood_history_screen.dart-          ),
+lib/features/mood/presentation/mood_history_screen.dart-          child: Text(
+lib/features/mood/presentation/mood_history_screen.dart-            label,
+lib/features/mood/presentation/mood_history_screen.dart-            textAlign: TextAlign.center,
+--
+lib/features/profile/presentation/assessment_history_screen.dart-                          color: Colors.white,
+lib/features/profile/presentation/assessment_history_screen.dart-                          shape: BoxShape.circle,
+lib/features/profile/presentation/assessment_history_screen.dart-                          boxShadow: [
+lib/features/profile/presentation/assessment_history_screen.dart-                            BoxShadow(
+lib/features/profile/presentation/assessment_history_screen.dart-                              color: Colors.black.withOpacity(0.05),
+lib/features/profile/presentation/assessment_history_screen.dart:                              blurRadius: 10,
+lib/features/profile/presentation/assessment_history_screen.dart-                            ),
+lib/features/profile/presentation/assessment_history_screen.dart-                          ],
+lib/features/profile/presentation/assessment_history_screen.dart-                        ),
+lib/features/profile/presentation/assessment_history_screen.dart-                        child: const Icon(Icons.arrow_back_rounded, color: Color(0xFF6A0DAD), size: 22),
+lib/features/profile/presentation/assessment_history_screen.dart-                      ),
+--
+lib/features/profile/presentation/assessment_history_screen.dart-        color: Colors.white,
+lib/features/profile/presentation/assessment_history_screen.dart-        borderRadius: BorderRadius.circular(24),
+lib/features/profile/presentation/assessment_history_screen.dart-        boxShadow: [
+lib/features/profile/presentation/assessment_history_screen.dart-          BoxShadow(
+lib/features/profile/presentation/assessment_history_screen.dart-            color: Colors.black.withOpacity(0.04),
+lib/features/profile/presentation/assessment_history_screen.dart:            blurRadius: 15,
+lib/features/profile/presentation/assessment_history_screen.dart-            offset: const Offset(0, 5),
+lib/features/profile/presentation/assessment_history_screen.dart-          ),
+lib/features/profile/presentation/assessment_history_screen.dart-        ],
+lib/features/profile/presentation/assessment_history_screen.dart-      ),
+lib/features/profile/presentation/assessment_history_screen.dart-      child: Column(
+--
+lib/features/profile/presentation/profile_screen.dart-          color: Colors.white.withOpacity(0.8),
+lib/features/profile/presentation/profile_screen.dart-          shape: BoxShape.circle,
+lib/features/profile/presentation/profile_screen.dart-          boxShadow: [
+lib/features/profile/presentation/profile_screen.dart-            BoxShadow(
+lib/features/profile/presentation/profile_screen.dart-              color: Colors.black.withOpacity(0.05),
+lib/features/profile/presentation/profile_screen.dart:              blurRadius: 10,
+lib/features/profile/presentation/profile_screen.dart-              offset: const Offset(0, 2),
+lib/features/profile/presentation/profile_screen.dart-            ),
+lib/features/profile/presentation/profile_screen.dart-          ],
+lib/features/profile/presentation/profile_screen.dart-        ),
+lib/features/profile/presentation/profile_screen.dart-        child: Icon(icon, color: const Color(0xFF6A0DAD), size: 22),
+--
+lib/features/profile/presentation/profile_screen.dart-            color: Colors.white,
+lib/features/profile/presentation/profile_screen.dart-            shape: BoxShape.circle,
+lib/features/profile/presentation/profile_screen.dart-            boxShadow: [
+lib/features/profile/presentation/profile_screen.dart-              BoxShadow(
+lib/features/profile/presentation/profile_screen.dart-                color: const Color(0xFF6A0DAD).withOpacity(0.12),
+lib/features/profile/presentation/profile_screen.dart:                blurRadius: 24,
+lib/features/profile/presentation/profile_screen.dart-                offset: const Offset(0, 8),
+lib/features/profile/presentation/profile_screen.dart-              ),
+lib/features/profile/presentation/profile_screen.dart-            ],
+lib/features/profile/presentation/profile_screen.dart-            border: Border.all(color: Colors.white, width: 4),
+lib/features/profile/presentation/profile_screen.dart-          ),
+--
+lib/features/profile/presentation/profile_screen.dart-        color: Colors.white.withOpacity(0.9),
+lib/features/profile/presentation/profile_screen.dart-        borderRadius: BorderRadius.circular(24),
+lib/features/profile/presentation/profile_screen.dart-        boxShadow: [
+lib/features/profile/presentation/profile_screen.dart-          BoxShadow(
+lib/features/profile/presentation/profile_screen.dart-            color: Colors.black.withOpacity(0.04),
+lib/features/profile/presentation/profile_screen.dart:            blurRadius: 20,
+lib/features/profile/presentation/profile_screen.dart-            offset: const Offset(0, 4),
+lib/features/profile/presentation/profile_screen.dart-          ),
+lib/features/profile/presentation/profile_screen.dart-        ],
+lib/features/profile/presentation/profile_screen.dart-      ),
+lib/features/profile/presentation/profile_screen.dart-      child: Row(
+--
+lib/features/profile/presentation/profile_screen.dart-        color: Colors.white,
+lib/features/profile/presentation/profile_screen.dart-        borderRadius: BorderRadius.circular(24),
+lib/features/profile/presentation/profile_screen.dart-        boxShadow: [
+lib/features/profile/presentation/profile_screen.dart-          BoxShadow(
+lib/features/profile/presentation/profile_screen.dart-            color: Colors.black.withOpacity(0.03),
+lib/features/profile/presentation/profile_screen.dart:            blurRadius: 15,
+lib/features/profile/presentation/profile_screen.dart-            offset: const Offset(0, 5),
+lib/features/profile/presentation/profile_screen.dart-          ),
+lib/features/profile/presentation/profile_screen.dart-        ],
+lib/features/profile/presentation/profile_screen.dart-      ),
+lib/features/profile/presentation/profile_screen.dart-      child: Column(
+--
+lib/features/breathing/presentation/breathing_exercise_screen.dart-            decoration: BoxDecoration(
+lib/features/breathing/presentation/breathing_exercise_screen.dart-              shape: BoxShape.circle,
+lib/features/breathing/presentation/breathing_exercise_screen.dart-              boxShadow: [
+lib/features/breathing/presentation/breathing_exercise_screen.dart-                BoxShadow(
+lib/features/breathing/presentation/breathing_exercise_screen.dart-                  color: Colors.white.withOpacity(0.3),
+lib/features/breathing/presentation/breathing_exercise_screen.dart:                  blurRadius: 50,
+lib/features/breathing/presentation/breathing_exercise_screen.dart-                  spreadRadius: 20,
+lib/features/breathing/presentation/breathing_exercise_screen.dart-                ),
+lib/features/breathing/presentation/breathing_exercise_screen.dart-              ],
+lib/features/breathing/presentation/breathing_exercise_screen.dart-              gradient: const RadialGradient(
+lib/features/breathing/presentation/breathing_exercise_screen.dart-                colors: [Colors.white, Colors.white70, Colors.transparent],
+--
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-        gradient: DashboardTheme.insightGradient,
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-        borderRadius: BorderRadius.circular(DashboardTheme.radiusXL),
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-        boxShadow: [
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-          BoxShadow(
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-            color: const Color(0xFF0F3460).withValues(alpha: 0.35),
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart:            blurRadius: 24,
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-            offset: const Offset(0, 10),
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-          ),
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-        ],
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-      ),
+lib/features/dashboard/presentation/widgets/weekly_report_card.dart-      child: Padding(
+--
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-      decoration: BoxDecoration(
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-        shape: BoxShape.circle,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-        boxShadow: [
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-          BoxShadow(
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-            color: widget.risk.color.withValues(alpha: 0.15 + _controller.value * 0.1),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart:            blurRadius: 40,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-            spreadRadius: 5,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-          ),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-        ],
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-      ),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-    );
+--
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-              fontWeight: FontWeight.w900,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-              color: Colors.white,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-              shadows: [
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-                Shadow(
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-                  color: Colors.black.withValues(alpha: 0.2),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart:                  blurRadius: 8,
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-                  offset: const Offset(0, 3),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-                ),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-              ],
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-            ),
+lib/features/dashboard/presentation/widgets/cmhi_orb.dart-          ),
+--
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-          width: 1.5,
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-        ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-        boxShadow: [
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-          BoxShadow(
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-            color: color.withValues(alpha: 0.1),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart:            blurRadius: 20,
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-            offset: const Offset(0, 8),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-          ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-        ],
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-      ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-      child: Column(
+--
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                  color: color.withValues(alpha: 0.1),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                  borderRadius: BorderRadius.circular(12),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                  boxShadow: [
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                    BoxShadow(
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      color: color.withValues(alpha: 0.15),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart:                      blurRadius: 8,
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      offset: const Offset(0, 2),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                    ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                  ],
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                child: Icon(icon, color: color, size: 18),
+--
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      borderRadius: BorderRadius.circular(100),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      boxShadow: [
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                        BoxShadow(
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                          color: color.withValues(alpha: 0.3),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart:                          blurRadius: 6,
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                          offset: const Offset(0, 2),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                        ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                      ],
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                    ),
+lib/features/dashboard/presentation/widgets/premium_metric_card.dart-                  ),
+--
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                  decoration: BoxDecoration(
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                    shape: BoxShape.circle,
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                    boxShadow: [
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                      BoxShadow(
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                        color: config.color.withValues(alpha: 0.15),
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart:                        blurRadius: 30,
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                        spreadRadius: 10,
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                      )
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                    ],
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                  ),
+lib/features/dashboard/presentation/widgets/mindful_moment_card.dart-                ),
+--
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-            width: 1,
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-          ),
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-          boxShadow: [
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-            BoxShadow(
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-              color: action.color.withValues(alpha: 0.08),
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart:              blurRadius: 12,
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-              offset: const Offset(0, 4),
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-            ),
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-          ],
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-        ),
+lib/features/dashboard/presentation/widgets/quick_actions_section.dart-        child: Column(
+--
+lib/features/dashboard/presentation/main_shell.dart-                  width: 1.5,
+lib/features/dashboard/presentation/main_shell.dart-                ),
+lib/features/dashboard/presentation/main_shell.dart-                boxShadow: [
+lib/features/dashboard/presentation/main_shell.dart-                  BoxShadow(
+lib/features/dashboard/presentation/main_shell.dart-                    color: Colors.black.withValues(alpha: 0.08),
+lib/features/dashboard/presentation/main_shell.dart:                    blurRadius: 24,
+lib/features/dashboard/presentation/main_shell.dart-                    offset: const Offset(0, 8),
+lib/features/dashboard/presentation/main_shell.dart-                  ),
+lib/features/dashboard/presentation/main_shell.dart-                ],
+lib/features/dashboard/presentation/main_shell.dart-              ),
+lib/features/dashboard/presentation/main_shell.dart-              child: SafeArea(
+--
+lib/features/dashboard/presentation/main_shell.dart-              color: isActive ? null : Colors.transparent,
+lib/features/dashboard/presentation/main_shell.dart-              borderRadius: BorderRadius.circular(16),
+lib/features/dashboard/presentation/main_shell.dart-              boxShadow: isActive ? [
+lib/features/dashboard/presentation/main_shell.dart-                BoxShadow(
+lib/features/dashboard/presentation/main_shell.dart-                  color: const Color(0xFF6A0DAD).withValues(alpha: 0.3),
+lib/features/dashboard/presentation/main_shell.dart:                  blurRadius: 10,
+lib/features/dashboard/presentation/main_shell.dart-                  offset: const Offset(0, 4),
+lib/features/dashboard/presentation/main_shell.dart-                )
+lib/features/dashboard/presentation/main_shell.dart-              ] : null,
+lib/features/dashboard/presentation/main_shell.dart-            ),
+lib/features/dashboard/presentation/main_shell.dart-            child: Icon(
+--
+lib/features/chat/presentation/chat_screen.dart-                boxShadow: [
+lib/features/chat/presentation/chat_screen.dart-                  BoxShadow(
+lib/features/chat/presentation/chat_screen.dart-                    color: isUser
+lib/features/chat/presentation/chat_screen.dart-                        ? const Color(0xFF6A0DAD).withOpacity(0.2)
+lib/features/chat/presentation/chat_screen.dart-                        : Colors.black.withOpacity(0.05),
+lib/features/chat/presentation/chat_screen.dart:                    blurRadius: 8,
+lib/features/chat/presentation/chat_screen.dart-                    offset: const Offset(0, 3),
+lib/features/chat/presentation/chat_screen.dart-                  ),
+lib/features/chat/presentation/chat_screen.dart-                ],
+lib/features/chat/presentation/chat_screen.dart-              ),
+lib/features/chat/presentation/chat_screen.dart-              child: Text(
+--
+lib/features/chat/presentation/chat_screen.dart-                bottomRight: Radius.circular(18),
+lib/features/chat/presentation/chat_screen.dart-              ),
+lib/features/chat/presentation/chat_screen.dart-              boxShadow: [
+lib/features/chat/presentation/chat_screen.dart-                BoxShadow(
+lib/features/chat/presentation/chat_screen.dart-                  color: Colors.black.withOpacity(0.05),
+lib/features/chat/presentation/chat_screen.dart:                  blurRadius: 8,
+lib/features/chat/presentation/chat_screen.dart-                  offset: const Offset(0, 3),
+lib/features/chat/presentation/chat_screen.dart-                ),
+lib/features/chat/presentation/chat_screen.dart-              ],
+lib/features/chat/presentation/chat_screen.dart-            ),
+lib/features/chat/presentation/chat_screen.dart-            child: Row(
+--
+lib/features/chat/presentation/chat_screen.dart-      decoration: BoxDecoration(
+lib/features/chat/presentation/chat_screen.dart-        color: Colors.white,
+lib/features/chat/presentation/chat_screen.dart-        boxShadow: [
+lib/features/chat/presentation/chat_screen.dart-          BoxShadow(
+lib/features/chat/presentation/chat_screen.dart-            color: Colors.black.withOpacity(0.04),
+lib/features/chat/presentation/chat_screen.dart:            blurRadius: 12,
+lib/features/chat/presentation/chat_screen.dart-            offset: const Offset(0, -4),
+lib/features/chat/presentation/chat_screen.dart-          ),
+lib/features/chat/presentation/chat_screen.dart-        ],
+lib/features/chat/presentation/chat_screen.dart-      ),
+lib/features/chat/presentation/chat_screen.dart-      child: SafeArea(
+--
+lib/features/chat/presentation/chat_screen.dart-                  ),
+lib/features/chat/presentation/chat_screen.dart-                  borderRadius: BorderRadius.circular(22),
+lib/features/chat/presentation/chat_screen.dart-                  boxShadow: [
+lib/features/chat/presentation/chat_screen.dart-                    BoxShadow(
+lib/features/chat/presentation/chat_screen.dart-                      color: const Color(0xFF6A0DAD).withOpacity(0.3),
+lib/features/chat/presentation/chat_screen.dart:                      blurRadius: 8,
+lib/features/chat/presentation/chat_screen.dart-                      offset: const Offset(0, 3),
+lib/features/chat/presentation/chat_screen.dart-                    ),
+lib/features/chat/presentation/chat_screen.dart-                  ],
+lib/features/chat/presentation/chat_screen.dart-                ),
+lib/features/chat/presentation/chat_screen.dart-                child: const Icon(
+--
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        borderRadius: BorderRadius.circular(20),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        border: Border.all(color: color.withOpacity(0.15)),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        boxShadow: [
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          BoxShadow(
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            color: color.withOpacity(0.08),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart:            blurRadius: 16,
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            offset: const Offset(0, 4),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        ],
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      child: Column(
+--
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        color: Colors.white,
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        borderRadius: BorderRadius.circular(20),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        boxShadow: [
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          BoxShadow(
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            color: Colors.black.withOpacity(0.04),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart:            blurRadius: 16,
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            offset: const Offset(0, 4),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        ],
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      child: RadarChart(
+--
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        borderRadius: BorderRadius.circular(16),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        border: Border.all(color: color.withOpacity(0.18)),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        boxShadow: [
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          BoxShadow(
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            color: color.withOpacity(0.06),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart:            blurRadius: 10,
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-            offset: const Offset(0, 3),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-          ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-        ],
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      ),
+lib/features/ai_reports/presentation/weekly_insight_screen.dart-      child: Row(
+--
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    ),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    boxShadow: isSelected
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        ? [
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            BoxShadow(
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              color: const Color(0xFF6A0DAD).withOpacity(0.2),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart:                              blurRadius: 12,
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              offset: const Offset(0, 4),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            )
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                          ]
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        : [],
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                  ),
+--
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    ),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    boxShadow: isSelected
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        ? [
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            BoxShadow(
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              color: const Color(0xFF6A0DAD).withOpacity(0.2),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart:                              blurRadius: 12,
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              offset: const Offset(0, 4),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            )
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                          ]
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        : [],
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                  ),
+--
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    ),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                    boxShadow: isSelected
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        ? [
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            BoxShadow(
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              color: (goal['color'] as Color).withOpacity(0.15),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart:                              blurRadius: 12,
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                              offset: const Offset(0, 4),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                            )
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                          ]
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                        : [],
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-                  ),
+--
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-        borderRadius: BorderRadius.circular(20),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-        border: Border.all(color: Colors.white.withOpacity(0.5)),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-        boxShadow: [
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-          BoxShadow(
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-            color: activeColor.withOpacity(0.08),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart:            blurRadius: 20,
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-            offset: const Offset(0, 6),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-          ),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-        ],
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-      ),
+lib/features/auth/presentation/mental_health_onboarding_screen.dart-      child: Column(
+--
+lib/features/auth/presentation/auth_screens.dart-                          width: 1.5,
+lib/features/auth/presentation/auth_screens.dart-                        ),
+lib/features/auth/presentation/auth_screens.dart-                        boxShadow: [
+lib/features/auth/presentation/auth_screens.dart-                          BoxShadow(
+lib/features/auth/presentation/auth_screens.dart-                            color: const Color(0xFF6A0DAD).withOpacity(0.06),
+lib/features/auth/presentation/auth_screens.dart:                            blurRadius: 40,
+lib/features/auth/presentation/auth_screens.dart-                            offset: const Offset(0, 12),
+lib/features/auth/presentation/auth_screens.dart-                          ),
+lib/features/auth/presentation/auth_screens.dart-                        ],
+lib/features/auth/presentation/auth_screens.dart-                      ),
+lib/features/auth/presentation/auth_screens.dart-                      child: Form(
+--
+lib/features/auth/presentation/auth_screens.dart-                          width: 1.5,
+lib/features/auth/presentation/auth_screens.dart-                        ),
+lib/features/auth/presentation/auth_screens.dart-                        boxShadow: [
+lib/features/auth/presentation/auth_screens.dart-                          BoxShadow(
+lib/features/auth/presentation/auth_screens.dart-                            color: const Color(0xFF6A0DAD).withOpacity(0.06),
+lib/features/auth/presentation/auth_screens.dart:                            blurRadius: 40,
+lib/features/auth/presentation/auth_screens.dart-                            offset: const Offset(0, 12),
+lib/features/auth/presentation/auth_screens.dart-                          ),
+lib/features/auth/presentation/auth_screens.dart-                        ],
+lib/features/auth/presentation/auth_screens.dart-                      ),
+lib/features/auth/presentation/auth_screens.dart-                      child: Form(
+--
+lib/core/theme/dashboard_theme.dart-
+lib/core/theme/dashboard_theme.dart-  // ─── Shadows ──────────────────────────────────────────────
+lib/core/theme/dashboard_theme.dart-  static List<BoxShadow> softShadow(Color tint) => [
+lib/core/theme/dashboard_theme.dart-    BoxShadow(
+lib/core/theme/dashboard_theme.dart-      color: tint.withValues(alpha: 0.08),
+lib/core/theme/dashboard_theme.dart:      blurRadius: 20,
+lib/core/theme/dashboard_theme.dart-      offset: const Offset(0, 8),
+lib/core/theme/dashboard_theme.dart-    ),
+lib/core/theme/dashboard_theme.dart-  ];
+lib/core/theme/dashboard_theme.dart-
+lib/core/theme/dashboard_theme.dart-  static List<BoxShadow> glowShadow(Color tint) => [
+lib/core/theme/dashboard_theme.dart-    BoxShadow(
+lib/core/theme/dashboard_theme.dart-      color: tint.withValues(alpha: 0.25),
+lib/core/theme/dashboard_theme.dart:      blurRadius: 24,
+lib/core/theme/dashboard_theme.dart-      offset: const Offset(0, 10),
+lib/core/theme/dashboard_theme.dart-    ),
+lib/core/theme/dashboard_theme.dart-  ];
+lib/core/theme/dashboard_theme.dart-
+lib/core/theme/dashboard_theme.dart-  // ─── Gradient Presets ─────────────────────────────────────

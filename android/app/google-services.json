@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "374464246054",
+    "project_id": "mindnova-2027",
+    "storage_bucket": "mindnova-2027.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374464246054:android:5f0be6502f47ef7aee91e7",
+        "android_client_info": {
+          "package_name": "com.mindnova.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "374464246054-o7rbg6c7dgjpnu7h65h1ktfusrthvjgv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mindnova.app",
+            "certificate_hash": "98a298e78e447f2b609be4ee9ad038d936bfbf35"
+          }
+        },
+        {
+          "client_id": "374464246054-dm9rmn2381jipr71kd8hn4ct8eupjnbi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0z9CxmBH-LBxqPvSApK7wWYMAPCltbds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "374464246054-dm9rmn2381jipr71kd8hn4ct8eupjnbi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

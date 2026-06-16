@@ -1,0 +1,192 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 96.0.0 (99.0.0 available)
+  analyzer 10.2.0 (12.1.0 available)
+  dart_style 3.1.7 (3.1.8 available)
+  lottie 3.3.2 (3.3.3 available)
+  matcher 0.12.18 (0.12.19 available)
+  meta 1.18.0 (1.18.2 available)
+  test 1.29.0 (1.31.0 available)
+  test_api 0.7.9 (0.7.11 available)
+  test_core 0.6.15 (0.6.17 available)
+  vector_math 2.2.0 (2.3.0 available)
+Got dependencies!
+10 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on Linux in debug mode...
+Building Linux application...                                   
+✓ Built build/linux/x64/debug/bundle/mind_nova_mobile
+Firebase is not supported natively on this platform yet. Skipping initialization.
+Syncing files to device Linux...                                   149ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Linux is available at: http://127.0.0.1:37741/BdNoSG8e5xs=/
+The Flutter DevTools debugger and profiler on Linux is available at: http://127.0.0.1:37741/BdNoSG8e5xs=/devtools/?uri=ws://127.0.0.1:37741/BdNoSG8e5xs=/ws
+🌐 [API] *** Request ***
+🌐 [API] uri: http://127.0.0.1:3000/scoring/calculate
+🌐 [API] method: POST
+🌐 [API] responseType: ResponseType.json
+🌐 [API] followRedirects: true
+🌐 [API] persistentConnection: true
+🌐 [API] connectTimeout: 0:00:10.000000
+🌐 [API] sendTimeout: null
+🌐 [API] receiveTimeout: 0:00:10.000000
+🌐 [API] receiveDataWhenStatusError: true
+🌐 [API] extra: {}
+🌐 [API] headers:
+🌐 [API]  Content-Type: application/json
+🌐 [API]  Accept: application/json
+🌐 [API] data:
+🌐 [API] {}
+🌐 [API] 
+🌐 [API] *** Request ***
+🌐 [API] uri: http://127.0.0.1:3000/moods/trends?days=7
+🌐 [API] method: GET
+🌐 [API] responseType: ResponseType.json
+🌐 [API] followRedirects: true
+🌐 [API] persistentConnection: true
+🌐 [API] connectTimeout: 0:00:10.000000
+🌐 [API] sendTimeout: null
+🌐 [API] receiveTimeout: 0:00:10.000000
+🌐 [API] receiveDataWhenStatusError: true
+🌐 [API] extra: {}
+🌐 [API] headers:
+🌐 [API]  Content-Type: application/json
+🌐 [API]  Accept: application/json
+🌐 [API] data:
+🌐 [API] null
+🌐 [API] 
+🌐 [API] *** Request ***
+🌐 [API] uri: http://127.0.0.1:3000/notifications?page=1&limit=1
+🌐 [API] method: GET
+🌐 [API] responseType: ResponseType.json
+🌐 [API] followRedirects: true
+🌐 [API] persistentConnection: true
+🌐 [API] connectTimeout: 0:00:10.000000
+🌐 [API] sendTimeout: null
+🌐 [API] receiveTimeout: 0:00:10.000000
+🌐 [API] receiveDataWhenStatusError: true
+🌐 [API] extra: {}
+🌐 [API] headers:
+🌐 [API]  Content-Type: application/json
+🌐 [API]  Accept: application/json
+🌐 [API] data:
+🌐 [API] null
+🌐 [API] 
+🌐 [API] *** Request ***
+🌐 [API] uri: http://127.0.0.1:3000/reports/weekly/latest
+🌐 [API] method: GET
+🌐 [API] responseType: ResponseType.json
+🌐 [API] followRedirects: true
+🌐 [API] persistentConnection: true
+🌐 [API] connectTimeout: 0:00:10.000000
+🌐 [API] sendTimeout: null
+🌐 [API] receiveTimeout: 0:00:10.000000
+🌐 [API] receiveDataWhenStatusError: true
+🌐 [API] extra: {}
+🌐 [API] headers:
+🌐 [API]  Content-Type: application/json
+🌐 [API]  Accept: application/json
+🌐 [API] data:
+🌐 [API] null
+🌐 [API] 
+🌐 [API] *** Request ***
+🌐 [API] uri: http://127.0.0.1:3000/assessments/sessions
+🌐 [API] method: GET
+🌐 [API] responseType: ResponseType.json
+🌐 [API] followRedirects: true
+🌐 [API] persistentConnection: true
+🌐 [API] connectTimeout: 0:00:10.000000
+🌐 [API] sendTimeout: null
+🌐 [API] receiveTimeout: 0:00:10.000000
+🌐 [API] receiveDataWhenStatusError: true
+🌐 [API] extra: {}
+🌐 [API] headers:
+🌐 [API]  Content-Type: application/json
+🌐 [API]  Accept: application/json
+🌐 [API] data:
+🌐 [API] null
+🌐 [API] 
+🌐 [API] *** Response ***
+🌐 [API] uri: http://127.0.0.1:3000/notifications?page=1&limit=1
+🌐 [API] statusCode: 200
+🌐 [API] statusMessage: OK
+🌐 [API] headers:
+🌐 [API]  x-powered-by: Express
+🌐 [API]  connection: keep-alive
+🌐 [API]  keep-alive: timeout=5
+🌐 [API]  date: Sat, 11 Apr 2026 18:59:37 GMT
+🌐 [API]  content-length: 65
+🌐 [API]  etag: W/"41-m9p+iyCSC2iIT20a9ueXPGL20kg"
+🌐 [API]  content-type: application/json; charset=utf-8
+🌐 [API] Response Text:
+🌐 [API] {"notifications":[],"total":0,"unreadCount":0,"page":1,"limit":1}
+🌐 [API] 
+🌐 [API] *** Response ***
+🌐 [API] uri: http://127.0.0.1:3000/reports/weekly/latest
+🌐 [API] statusCode: 200
+🌐 [API] statusMessage: OK
+🌐 [API] headers:
+🌐 [API]  x-powered-by: Express
+🌐 [API]  connection: keep-alive
+🌐 [API]  keep-alive: timeout=5
+🌐 [API]  date: Sat, 11 Apr 2026 18:59:37 GMT
+🌐 [API]  content-length: 1239
+🌐 [API]  etag: W/"4d7-0CK/C2QOzJI4Y+IIpGfiUui/dFY"
+🌐 [API]  content-type: application/json; charset=utf-8
+🌐 [API] Response Text:
+🌐 [API] {"id":"27f5677f-3b20-4ac5-a58a-511b571fd7a8","userId":"8353e55f-fb94-46e6-89c7-f0968f36ce53","weekStartDate":"2026-04-04T00:00:00.000Z","weekEndDate":"2026-04-11T00:00:00.000Z","avgMoodScore":2.545454545454545,"avgSleepHours":null,"emotionalVolatility":1.49931113658824,"anxietyTrend":null,"burnoutRisk":null,"aiSummary":"As you look back on your week, it's clear that you've experienced a mix of emotions. You started with a strong sense of joy and happiness, but as the days went by, things took a more challenging turn. You struggled with feelings of sadness, depression, and even thoughts of wanting to die. It's important to acknowledge the intense emotional pain you're going through and recognize that it's okay to feel overwhelmed. Remember that these feelings are not a reflection of your worth as a person, but rather a sign that you need support and care.","aiRecommendations":["Practice self-compassion by acknowledging and accepting your emotions","Reach out to a trusted friend, family member, or mental health professional for emotional support","Engage in activities that bring you joy and help take your mind off things"],"crisisRiskLevel":"HIGH","isShared":false,"isExported":false,"createdAt":"2026-04-11T18:30:11.403Z"}
+🌐 [API] 
+🌐 [API] *** Response ***
+🌐 [API] uri: http://127.0.0.1:3000/moods/trends?days=7
+🌐 [API] statusCode: 200
+🌐 [API] statusMessage: OK
+🌐 [API] headers:
+🌐 [API]  x-powered-by: Express
+🌐 [API]  connection: keep-alive
+🌐 [API]  keep-alive: timeout=5
+🌐 [API]  date: Sat, 11 Apr 2026 18:59:37 GMT
+🌐 [API]  content-length: 69
+🌐 [API]  etag: W/"45-BvAobrDt0O8xarcACyH9+HMJpeA"
+🌐 [API]  content-type: application/json; charset=utf-8
+🌐 [API] Response Text:
+🌐 [API] [{date: 2026-04-10, score: 2.5}, {date: 2026-04-11, score: 2.3}]
+🌐 [API] 
+🌐 [API] *** Response ***
+🌐 [API] uri: http://127.0.0.1:3000/scoring/calculate
+🌐 [API] statusCode: 201
+🌐 [API] statusMessage: Created
+🌐 [API] headers:
+🌐 [API]  x-powered-by: Express
+🌐 [API]  connection: keep-alive
+🌐 [API]  keep-alive: timeout=5
+🌐 [API]  date: Sat, 11 Apr 2026 18:59:37 GMT
+🌐 [API]  content-length: 320
+🌐 [API]  etag: W/"140-aKPgWhho0JffH699cgDN7G6kA2U"
+🌐 [API]  content-type: application/json; charset=utf-8
+🌐 [API] Response Text:
+🌐 [API] {"id":"dc00cbf1-d480-4181-8073-e9fdce1b7a33","userId":"8353e55f-fb94-46e6-89c7-f0968f36ce53","cmhi":50,"emotional":50,"cognitive":50,"behavioral":50,"physiological":50,"temporal":50,"anxietyRisk":50,"depressionRisk":50,"burnoutRisk":50,"crisisRisk":40,"riskCategory":"MODERATE","calculatedAt":"2026-04-11T18:59:37.006Z"}
+🌐 [API] 
+🌐 [API] *** Response ***
+🌐 [API] uri: http://127.0.0.1:3000/assessments/sessions
+🌐 [API] statusCode: 200
+🌐 [API] statusMessage: OK
+🌐 [API] headers:
+🌐 [API]  x-powered-by: Express
+🌐 [API]  connection: keep-alive
+🌐 [API]  keep-alive: timeout=5
+🌐 [API]  date: Sat, 11 Apr 2026 18:59:37 GMT
+🌐 [API]  content-length: 2
+🌐 [API]  etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
+🌐 [API]  content-type: application/json; charset=utf-8
+🌐 [API] Response Text:
+🌐 [API] []
+🌐 [API] 
+Application finished.

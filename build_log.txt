@@ -1,0 +1,47 @@
+Building Linux application...                                   
+ERROR: lib/features/mood/presentation/mood_checkin_screen.dart:6:8: Error: Error when reading 'lib/shared/constants/app_colors.dart': No such file or directory
+ERROR: import '../../../shared/constants/app_colors.dart'; // Assume typical shared color set
+ERROR:        ^
+ERROR: lib/features/mood/providers/mood_log_provider.dart:12:21: Error: Too many positional arguments: 1 allowed, but 2 found.
+ERROR: Try removing the extra positional arguments.
+ERROR:   return MoodService(apiClient, localDb);
+ERROR:                     ^
+ERROR: lib/features/mood/data/mood_service.dart:9:3: Context: Found this candidate, but the arguments don't match.
+ERROR:   MoodService(this._apiClient);
+ERROR:   ^^^^^^^^^^^
+ERROR: lib/features/mood/providers/mood_log_provider.dart:126:32: Error: The method 'getMoodStreak' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'getMoodStreak'.
+ERROR:     final data = await service.getMoodStreak();
+ERROR:                                ^^^^^^^^^^^^^
+ERROR: lib/features/dashboard/providers/dashboard_provider.dart:18:11: Error: The method 'syncPendingMoods' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'syncPendingMoods'.
+ERROR:   service.syncPendingMoods().ignore();
+ERROR:           ^^^^^^^^^^^^^^^^
+ERROR: lib/features/dashboard/providers/dashboard_provider.dart:20:24: Error: The method 'getMoodTrends' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'getMoodTrends'.
+ERROR:   return await service.getMoodTrends();
+ERROR:                        ^^^^^^^^^^^^^
+ERROR: lib/features/ai_reports/providers/weekly_report_provider.dart:9:22: Error: The method 'fetchLatestWeeklyReport' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'fetchLatestWeeklyReport'.
+ERROR:   return moodService.fetchLatestWeeklyReport();
+ERROR:                      ^^^^^^^^^^^^^^^^^^^^^^^
+ERROR: lib/features/mood/providers/analytics_provider.dart:64:36: Error: The method 'getMoodTrends' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'getMoodTrends'.
+ERROR:       final trends = await service.getMoodTrends(days: range);
+ERROR:                                    ^^^^^^^^^^^^^
+ERROR: lib/features/mood/providers/analytics_provider.dart:65:38: Error: The method 'getMoodInsights' isn't defined for the type 'MoodService'.
+ERROR:  - 'MoodService' is from 'package:mind_nova_mobile/features/mood/data/mood_service.dart' ('lib/features/mood/data/mood_service.dart').
+ERROR: Try correcting the name to the name of an existing method, or defining a method named 'getMoodInsights'.
+ERROR:       final insights = await service.getMoodInsights(days: range);
+ERROR:                                      ^^^^^^^^^^^^^^^
+ERROR: lib/features/mood/providers/mood_log_provider.dart:89:43: Error: Too many positional arguments: 0 allowed, but 2 found.
+ERROR: Try removing the extra positional arguments.
+ERROR:       final result = await service.logMood(
+ERROR:                                           ^
+ERROR: Target kernel_snapshot_program failed: Exception
+Build process failed
