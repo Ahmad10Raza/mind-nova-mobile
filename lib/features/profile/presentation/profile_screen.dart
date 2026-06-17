@@ -633,15 +633,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         fullUrl = '$baseUrl${avatarUrl.startsWith('/') ? '' : '/'}$avatarUrl';
       }
 
-      // Append a timestamp to bypass image cache if the URL is the same but content changed
-      final busterUrl = fullUrl.contains('?') 
-          ? '$fullUrl&t=${DateTime.now().millisecondsSinceEpoch}' 
-          : '$fullUrl?t=${DateTime.now().millisecondsSinceEpoch}';
-          
       return Image.network(
-        busterUrl,
+        fullUrl,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(name),
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('Avatar load error: $error');
+          return _buildAvatarFallback(name);
+        },
       );
     }
     return _buildAvatarFallback(name);
