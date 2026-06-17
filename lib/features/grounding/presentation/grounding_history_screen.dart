@@ -75,14 +75,24 @@ class _GroundingHistoryScreenState extends ConsumerState<GroundingHistoryScreen>
                     _buildStat("${historyState.sessions.length}", "Sessions"),
                     _buildDivider(),
                     _buildStat(
-                      historyState.sessions.isEmpty ? "0m" :
-                        "${historyState.sessions.fold(0, (a, b) => a + b.durationSecs) ~/ 60}m",
+                      () {
+                        if (historyState.sessions.isEmpty) return "0s";
+                        final totalSecs = historyState.sessions.fold(0, (a, b) => a + b.durationSecs);
+                        if (totalSecs < 60) return "${totalSecs}s";
+                        final mins = totalSecs ~/ 60;
+                        final secs = totalSecs % 60;
+                        return secs > 0 ? "${mins}m ${secs}s" : "${mins}m";
+                      }(),
                       "Total Time",
                     ),
                     _buildDivider(),
                     _buildStat(
-                      historyState.sessions.isEmpty ? "—" :
-                        "${(historyState.sessions.where((s) => s.calmAfter != null).fold(0, (a, b) => a + (b.calmAfter ?? 0)) / (historyState.sessions.where((s) => s.calmAfter != null).length.clamp(1, 999))).toStringAsFixed(1)}/10",
+                      () {
+                        final withCalm = historyState.sessions.where((s) => s.calmAfter != null).toList();
+                        if (withCalm.isEmpty) return "—";
+                        final sum = withCalm.fold(0.0, (a, b) => a + b.calmAfter!);
+                        return "${(sum / withCalm.length).toStringAsFixed(1)}/10";
+                      }(),
                       "Avg Calm",
                     ),
                   ],

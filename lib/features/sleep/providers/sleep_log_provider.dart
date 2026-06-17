@@ -32,16 +32,16 @@ class SleepLog {
   /// Create from local SQLite row.
   factory SleepLog.fromDb(Map<String, dynamic> row) {
     return SleepLog(
-      localId: row['id'] as int?,
-      syncId: row['sync_id'] as String?,
-      date: DateTime.parse(row['date'] as String),
-      bedtime: row['bedtime'] as String?,
-      wakeTime: row['wake_time'] as String?,
-      durationHours: (row['duration_hours'] as num).toDouble(),
-      quality: (row['quality'] as num).toDouble(),
-      awakenings: (row['awakenings'] as int?) ?? 0,
-      stressBefore: (row['stress_before'] as num?)?.toDouble(),
-      morningMood: (row['morning_mood'] as num?)?.toDouble(),
+      localId: int.tryParse(row['id']?.toString() ?? ''),
+      syncId: row['sync_id']?.toString(),
+      date: row['date'] != null ? DateTime.tryParse(row['date'].toString()) ?? DateTime.now() : DateTime.now(),
+      bedtime: row['bedtime']?.toString(),
+      wakeTime: row['wake_time']?.toString(),
+      durationHours: double.tryParse(row['duration_hours']?.toString() ?? '') ?? 0.0,
+      quality: double.tryParse(row['quality']?.toString() ?? '') ?? 3.0,
+      awakenings: int.tryParse(row['awakenings']?.toString() ?? '') ?? 0,
+      stressBefore: double.tryParse(row['stress_before']?.toString() ?? ''),
+      morningMood: double.tryParse(row['morning_mood']?.toString() ?? ''),
     );
   }
 
@@ -102,19 +102,25 @@ class SleepLogNotifier extends AsyncNotifier<List<SleepLog>> {
       morningMood: morningMood,
     );
 
+    // Optimistic Update for Realtime UI + Web Testing
+    final currentLogs = state.value ?? [];
+    state = AsyncValue.data([log, ...currentLogs]);
+
     // 1. Persist locally
     try {
       final db = ref.read(localDbProvider);
       await db.upsertSleepLog(log.toDbMap());
+      
+      final dbLogs = await _loadFromDb();
+      if (dbLogs.isNotEmpty) {
+        state = AsyncValue.data(dbLogs);
+      }
     } catch (e) {
       debugPrint('Failed to save sleep log locally: $e');
     }
 
     // 2. Attempt backend sync (fire-and-forget)
     _syncToBackend(log).ignore();
-
-    // 3. Reload state from DB
-    state = AsyncValue.data(await _loadFromDb());
   }
 
   /// Sync a single log to the backend.
@@ -191,9 +197,17 @@ final sleepLogProvider = AsyncNotifierProvider<SleepLogNotifier, List<SleepLog>>
 /// Convenience provider: has the user logged sleep today?
 final todaySleepLogProvider = FutureProvider.autoDispose<SleepLog?>((ref) async {
   try {
-    final db = ref.read(localDbProvider);
-    final row = await db.getTodaySleepLog();
-    return row != null ? SleepLog.fromDb(row) : null;
+    final logs = await ref.watch(sleepLogProvider.future);
+    final now = DateTime.now();
+    try {
+      return logs.firstWhere((log) => 
+        log.date.year == now.year &&
+        log.date.month == now.month &&
+        log.date.day == now.day
+      );
+    } catch (_) {
+      return null;
+    }
   } catch (e) {
     return null;
   }
@@ -202,9 +216,7 @@ final todaySleepLogProvider = FutureProvider.autoDispose<SleepLog?>((ref) async 
 /// Average sleep hours from last 7 days (for dashboard metric card).
 final sleepAverageProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   try {
-    final db = ref.read(localDbProvider);
-    final rows = await db.getSleepLogs(days: 7);
-    final logs = rows.map((r) => SleepLog.fromDb(r)).toList();
+    final logs = await ref.watch(sleepLogProvider.future);
 
     if (logs.isEmpty) {
       return {'avg': 0.0, 'trend': 0.0, 'badge': 'No data', 'progress': 0.0};
@@ -245,9 +257,7 @@ final sleepAverageProvider = FutureProvider.autoDispose<Map<String, dynamic>>((r
 /// Dynamic Sleep Score & Metrics Provider
 final sleepMetricsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   try {
-    final db = ref.read(localDbProvider);
-    final rows = await db.getSleepLogs(days: 7);
-    final logs = rows.map((r) => SleepLog.fromDb(r)).toList();
+    final logs = await ref.watch(sleepLogProvider.future);
 
     if (logs.isEmpty) {
       return {
@@ -255,6 +265,8 @@ final sleepMetricsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((r
         'quality': 'N/A',
         'consistency': 0.0,
         'avgHours': 0.0,
+        'stressLevel': 'Low',
+        'streak': 0,
       };
     }
 
@@ -333,6 +345,8 @@ final sleepMetricsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((r
       'quality': 'Error',
       'consistency': 0.0,
       'avgHours': 0.0,
+      'stressLevel': 'Low',
+      'streak': 0,
     };
   }
 });

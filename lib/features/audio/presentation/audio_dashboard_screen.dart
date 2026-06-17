@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../domain/audio_model.dart';
 import '../providers/audio_provider.dart';
 import '../providers/audio_player_provider.dart';
@@ -19,13 +21,12 @@ class AudioDashboardScreen extends ConsumerStatefulWidget {
   @override
   ConsumerState<AudioDashboardScreen> createState() => _AudioDashboardScreenState();
 }
-
 class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
     with TickerProviderStateMixin {
   late AnimationController _particleController;
 
-  // Local files state (mocking recently played)
-  List<File> _recentLocalFiles = [];
+  // Local files state
+  List<AudioTrack> _localTracks = [];
   String _selectedLibraryCategoryId = 'FOR_YOU';
 
   @override
@@ -35,6 +36,48 @@ class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
+    
+    if (!kIsWeb) {
+      _loadSavedLocalTracks();
+    }
+  }
+
+  Future<void> _loadSavedLocalTracks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getStringList('local_tracks_meta') ?? [];
+      if (saved.isNotEmpty) {
+        setState(() {
+          _localTracks = saved.map((s) {
+            final map = jsonDecode(s);
+            return AudioTrack(
+              id: map['id'],
+              title: map['title'],
+              category: 'LOCAL',
+              audioUrl: map['audioUrl'],
+              durationSeconds: null,
+            );
+          }).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load local tracks: $e');
+    }
+  }
+
+  Future<void> _saveLocalTracks() async {
+    if (kIsWeb) return; // Skip persisting on web since data URIs are huge
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = _localTracks.map((t) => jsonEncode({
+        'id': t.id,
+        'title': t.title,
+        'audioUrl': t.audioUrl,
+      })).toList();
+      await prefs.setStringList('local_tracks_meta', saved);
+    } catch (e) {
+      debugPrint('Failed to save local tracks: $e');
+    }
   }
 
   @override
@@ -47,27 +90,49 @@ class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['mp3', 'wav', 'flac', 'm4a', 'aac'],
+      withData: kIsWeb, // Required for Web
+      allowMultiple: true, // Allow user to select multiple files
     );
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      setState(() {
-        if (!_recentLocalFiles.any((f) => f.path == file.path)) {
-          _recentLocalFiles.insert(0, file);
+    if (result != null && result.files.isNotEmpty) {
+      final List<AudioTrack> newTracks = [];
+
+      for (final file in result.files) {
+        String? playUrl;
+        String id = file.name;
+
+        if (kIsWeb) {
+          if (file.bytes != null) {
+            final base64String = base64Encode(file.bytes!);
+            playUrl = 'data:audio/mpeg;base64,$base64String';
+          }
+        } else {
+          if (file.path != null) {
+            playUrl = file.path;
+            id = file.path!;
+          }
         }
-      });
-      
-      // Play the local file
-      final track = AudioTrack(
-        id: file.path,
-        title: result.files.single.name,
-        category: 'LOCAL',
-        audioUrl: file.path,
-        durationSeconds: 0, 
-      );
-      
-      final notifier = ref.read(audioPlayerProvider.notifier);
-      notifier.setQueue([track]);
+
+        if (playUrl != null) {
+          final track = AudioTrack(
+            id: id,
+            title: file.name,
+            category: 'LOCAL',
+            audioUrl: playUrl,
+            durationSeconds: null, 
+          );
+          
+          if (!_localTracks.any((t) => t.id == track.id)) {
+            _localTracks.insert(0, track);
+          }
+          newTracks.add(track);
+        }
+      }
+
+      if (newTracks.isNotEmpty) {
+        _saveLocalTracks();
+        setState(() {}); // trigger rebuild to show imported files
+      }
     }
   }
 
@@ -948,14 +1013,14 @@ class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
                 ),
                 
                 const SizedBox(height: 48),
-                _buildSectionTitle('history', 'Recently Played Offline'),
+                _buildSectionTitle('library_music', 'Imported Device Files'),
                 const SizedBox(height: 16),
                 
-                if (_recentLocalFiles.isEmpty)
+                if (_localTracks.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      'No local files played recently.',
+                      'No local files imported yet.',
                       style: GoogleFonts.inter(color: Colors.white54),
                     ),
                   )
@@ -964,70 +1029,17 @@ class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: _recentLocalFiles.length,
+                    itemCount: _localTracks.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final file = _recentLocalFiles[index];
-                      final name = file.path.split('/').last;
-                      return GestureDetector(
+                      final track = _localTracks[index];
+                      return AudioTrackCard(
+                        track: track,
                         onTap: () {
-                           final track = AudioTrack(
-                            id: file.path,
-                            title: name,
-                            category: 'LOCAL',
-                            audioUrl: file.path,
-                            durationSeconds: 0, 
-                          );
-                          ref.read(audioPlayerProvider.notifier).setQueue([track]);
+                          // Standard music flow: Tap one to play it!
+                          ref.read(audioPlayerProvider.notifier).setQueue(_localTracks, startIndex: index);
+                          context.push('/audio/player', extra: track);
                         },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1B1F2C).withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF262A37),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.audio_file, color: Color(0xFFC9C4D8)),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Internal Storage',
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFFC9C4D8).withValues(alpha: 0.6),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(Icons.play_arrow_rounded, color: Colors.white54),
-                            ],
-                          ),
-                        ),
                       );
                     },
                   ),

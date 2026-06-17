@@ -69,7 +69,6 @@ class _DefaultTechniquesTab extends StatelessWidget {
           ),
           AppSpacing.v32,
           ...techniques.map((t) => _buildTechniqueCard(context, t)),
-          _buildCustomCard(context),
         ],
       ),
     );
@@ -119,39 +118,6 @@ class _DefaultTechniquesTab extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildCustomCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) => const CustomBreathingDialog(),
-        );
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.s16),
-        padding: const EdgeInsets.all(AppSpacing.s20),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: AppRadius.xl,
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.settings_suggest_outlined, color: AppColors.textMuted),
-            AppSpacing.h16,
-            Text(
-              'Create Custom Interval',
-              style: AppTypography.labelMedium.copyWith(color: AppColors.textSecondary),
-            ),
-            const Spacer(),
-            const Icon(Icons.add, size: 16, color: AppColors.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Tab 2: My Saved Sessions ──────────────────────────────────────
@@ -185,10 +151,45 @@ class _MySavedSessionsTab extends ConsumerWidget {
               ),
               AppSpacing.v24,
               ...sessions.map((t) => _buildSavedCard(context, ref, t)),
+              AppSpacing.v16,
+              _buildCustomCard(context),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCustomCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => const CustomBreathingDialog(),
+        );
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.s16),
+        padding: const EdgeInsets.all(AppSpacing.s20),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: AppRadius.xl,
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.settings_suggest_outlined, color: AppColors.textMuted),
+            AppSpacing.h16,
+            Text(
+              'Create Custom Interval',
+              style: AppTypography.labelMedium.copyWith(color: AppColors.textSecondary),
+            ),
+            const Spacer(),
+            const Icon(Icons.add, size: 16, color: AppColors.textMuted),
+          ],
+        ),
+      ),
     );
   }
 

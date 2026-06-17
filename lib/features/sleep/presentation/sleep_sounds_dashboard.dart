@@ -77,7 +77,7 @@ class _SleepSoundsDashboardState extends ConsumerState<SleepSoundsDashboard> wit
             child: ListView(
               padding: const EdgeInsets.only(top: 20, bottom: 120), // Bottom padding for minibar
               children: [
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 24),
                 
                 // Hero Section
@@ -161,35 +161,47 @@ class _SleepSoundsDashboardState extends ConsumerState<SleepSoundsDashboard> wit
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Good evening,',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: Colors.white70,
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white70, size: 20),
+            onPressed: () => Navigator.pop(context),
+            padding: EdgeInsets.zero,
+            alignment: Alignment.centerLeft,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Good evening,',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
                 ),
-              ),
-              Text(
-                'Time to unwind.',
-                style: GoogleFonts.outfit(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                Text(
+                  'Time to unwind.',
+                  style: GoogleFonts.outfit(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.cloud_download_rounded, color: Colors.white70),
             onPressed: () {},
+            padding: EdgeInsets.zero,
+            alignment: Alignment.centerRight,
           )
         ],
       ),

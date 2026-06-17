@@ -27,10 +27,12 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
     );
 
     _breathingPlayer.setReleaseMode(ReleaseMode.loop);
+    _breathingPlayer.play(AssetSource('audio/breathing_timer.mp3')).catchError((e) {
+      debugPrint("Audio play error: $e");
+    });
 
     Future.microtask(() {
       ref.read(breathingProvider.notifier).startSession(widget.technique);
-      _breathingPlayer.play(AssetSource('audio/breathing_timer.mp3'));
       _updateAnimation();
     });
   }

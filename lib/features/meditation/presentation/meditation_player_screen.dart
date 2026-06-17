@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../domain/meditation_model.dart';
 
 import 'providers/meditation_provider.dart';
@@ -22,6 +23,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
   late AnimationController _particleController;
   late AnimationController _colorController;
   late AnimationController _completionController;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isPlaying = false;
   bool _showCompletion = false;
@@ -64,6 +66,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
       duration: const Duration(milliseconds: 600),
     );
     _breathTimer = null;
+    _audioPlayer.setReleaseMode(ReleaseMode.loop);
   }
 
   void _startBreathCycle() {
@@ -85,6 +88,18 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
     if (_isPlaying) {
       _breathingController.repeat(reverse: true);
       _startBreathCycle();
+      
+      final audioUrl = widget.content?.audioUrl;
+      if (audioUrl != null && audioUrl.isNotEmpty) {
+        if (audioUrl.startsWith('http')) {
+          _audioPlayer.play(UrlSource(audioUrl));
+        } else {
+          _audioPlayer.play(AssetSource(audioUrl));
+        }
+      } else {
+        _audioPlayer.play(AssetSource('audio/space_ambience.mp3'));
+      }
+
       // Start the session elapsed timer
       _sessionTimer = Timer.periodic(const Duration(seconds: 1), (t) {
         if (!mounted) { t.cancel(); return; }
@@ -99,6 +114,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
             _isPlaying = false;
             _breathingController.stop();
             _breathTimer?.cancel();
+            _audioPlayer.stop();
             _showCompletion = true;
           }
         });
@@ -108,6 +124,34 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
       _breathTimer?.cancel();
       _sessionTimer?.cancel();
       _sessionTimer = null;
+      _audioPlayer.pause();
+    }
+  }
+
+  void _seek(int offsetSeconds) async {
+    final totalSecs = (widget.content?.durationMinutes ?? 10) * 60;
+    final newElapsed = (_secondsElapsed + offsetSeconds).clamp(0, totalSecs);
+    setState(() {
+      _secondsElapsed = newElapsed;
+      _sliderValue = (_secondsElapsed / totalSecs).clamp(0.0, 1.0);
+    });
+
+    try {
+      await _audioPlayer.seek(Duration(seconds: newElapsed));
+    } catch (_) {
+      // Ignore if seeking fails (e.g. on short looped ambience tracks)
+    }
+
+    if (_secondsElapsed >= totalSecs && !_showCompletion) {
+      _sessionTimer?.cancel();
+      _sessionTimer = null;
+      setState(() {
+        _isPlaying = false;
+        _showCompletion = true;
+      });
+      _breathingController.stop();
+      _breathTimer?.cancel();
+      _audioPlayer.stop();
     }
   }
 
@@ -130,6 +174,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
     _completionController.dispose();
     _breathTimer?.cancel();
     _sessionTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -249,15 +294,32 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
             ],
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              _sessionTimer?.cancel();
+              _sessionTimer = null;
+              setState(() {
+                _isPlaying = false;
+                _showCompletion = true;
+              });
+              _breathingController.stop();
+              _breathTimer?.cancel();
+              _audioPlayer.stop();
+            },
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.08),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withOpacity(0.12)),
               ),
-              child: const Icon(Icons.favorite_border_rounded, color: Colors.white70, size: 18),
+              child: Text(
+                'End',
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ],
@@ -438,10 +500,9 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
             child: Slider(
               value: _sliderValue,
               onChanged: (v) {
-                setState(() {
-                  _sliderValue = v;
-                  _secondsElapsed = (v * totalSecs).toInt();
-                });
+                final totalSecs = (widget.content?.durationMinutes ?? 10) * 60;
+                final targetSeconds = (v * totalSecs).toInt();
+                _seek(targetSeconds - _secondsElapsed);
               },
             ),
           ),
@@ -481,7 +542,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
       children: [
         IconButton(
           icon: const Icon(Icons.replay_10_rounded, color: Colors.white60, size: 32),
-          onPressed: () {},
+          onPressed: () => _seek(-10),
         ),
         const SizedBox(width: 24),
         GestureDetector(
@@ -515,7 +576,7 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
         const SizedBox(width: 24),
         IconButton(
           icon: const Icon(Icons.forward_10_rounded, color: Colors.white60, size: 32),
-          onPressed: () {},
+          onPressed: () => _seek(10),
         ),
       ],
     );

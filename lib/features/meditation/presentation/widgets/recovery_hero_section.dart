@@ -16,10 +16,26 @@ class RecoveryHeroSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(meditationDashboardProvider);
-    final catalogAsync = ref.watch(meditationCatalogProvider(null));
-    final firstItem = catalogAsync.asData?.value.isNotEmpty == true
-        ? catalogAsync.asData!.value.first
+    final recommendedAsync = ref.watch(recommendedMeditationProvider);
+    final recommendedItem = recommendedAsync.asData?.value.isNotEmpty == true
+        ? recommendedAsync.asData!.value.first
         : null;
+
+    String insightText = 'Nova is analyzing your recovery patterns...';
+    String recommendationText = 'Finding the best session for you...';
+    
+    if (recommendedItem != null) {
+      if (recommendedItem.category == 'SLEEP') {
+        insightText = 'Nova noticed a drop in your sleep quality.';
+      } else if (recommendedItem.category == 'ANXIETY_RELIEF') {
+        insightText = 'Nova noticed elevated stress markers recently.';
+      } else if (recommendedItem.category == 'FOCUS') {
+        insightText = 'Nova suggests realigning your focus today.';
+      } else {
+        insightText = 'Nova found a perfect session for your current state.';
+      }
+      recommendationText = 'Recommended: ${recommendedItem.title} · ${recommendedItem.durationMinutes} min';
+    }
 
     return AnimatedBuilder(
       animation: floatAnimation,
@@ -163,13 +179,13 @@ class RecoveryHeroSection extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Nova noticed elevated stress this week.',
+                                    insightText,
                                     style: AppTypography.caption.copyWith(
                                         color: AppColors.textSecondary),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Recommended: Anxiety Reset · 10 min',
+                                    recommendationText,
                                     style: AppTypography.labelSmall.copyWith(
                                         color: AppColors.calmTeal),
                                   ),
@@ -224,7 +240,7 @@ class RecoveryHeroSection extends ConsumerWidget {
                         child: ElevatedButton(
                           onPressed: () => context.push(
                               '/meditation/player',
-                              extra: firstItem),
+                              extra: recommendedItem),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.novaPurple,
                             foregroundColor: Colors.white,

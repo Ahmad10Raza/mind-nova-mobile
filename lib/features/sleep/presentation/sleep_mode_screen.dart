@@ -284,7 +284,7 @@ class _SleepModeScreenState extends ConsumerState<SleepModeScreen>
               'Sounds',
               Icons.music_note_rounded,
               SleepColors.lavenderGlow,
-              () => context.push('/sleep/sounds'),
+              () => context.push('/audio'),
             ),
             const SizedBox(width: 12),
             _buildFeatureTile(

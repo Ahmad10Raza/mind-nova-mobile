@@ -67,6 +67,18 @@ class _AmbientMixBottomSheetState extends ConsumerState<AmbientMixBottomSheet> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 26),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -102,9 +114,55 @@ class _AmbientMixBottomSheetState extends ConsumerState<AmbientMixBottomSheet> {
                   return ListView.builder(
                     controller: controller,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: ambientTracks.length,
+                    itemCount: ambientTracks.length + 1,
                     itemBuilder: (_, i) {
-                      final track = ambientTracks[i];
+                      if (i == 0) {
+                        final isSelected = playerState.ambientTrack == null;
+                        return GestureDetector(
+                          onTap: () async {
+                            if (!isSelected) {
+                              await notifier.setAmbientTrack(null);
+                              setState(() {});
+                            }
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF7C3AED).withValues(alpha: 0.15)
+                                  : Colors.white.withValues(alpha: 0.04),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
+                                    : Colors.white.withValues(alpha: 0.07),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Text('🔇', style: TextStyle(fontSize: 22)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'None (Turn Off)',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(Icons.check_circle_rounded, color: Color(0xFF7C3AED), size: 20),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final track = ambientTracks[i - 1];
                       final isSelected = playerState.ambientTrack?.id == track.id;
                       return GestureDetector(
                         onTap: () async {

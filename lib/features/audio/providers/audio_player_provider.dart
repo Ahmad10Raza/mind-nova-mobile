@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import '../domain/audio_model.dart';
@@ -164,28 +165,14 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   }
 
   void _handleTrackEnd() {
-    final q = state.queue;
-    if (q.tracks.isEmpty) return;
+    if (state.queue.tracks.isEmpty) return;
 
     if (state.repeatMode == AudioRepeatMode.one) {
       seekTo(Duration.zero);
       _primary?.play();
       return;
     }
-
-    final nextIndex = q.shuffle
-        ? (q.tracks.length * (DateTime.now().millisecondsSinceEpoch % 1000) ~/ 1000).clamp(0, q.tracks.length - 1)
-        : q.currentIndex + 1;
-
-    if (nextIndex < q.tracks.length) {
-      final newQueue = q.copyWith(currentIndex: nextIndex);
-      state = state.copyWith(queue: newQueue);
-      play(q.tracks[nextIndex]);
-    } else if (state.repeatMode == AudioRepeatMode.all) {
-      final newQueue = q.copyWith(currentIndex: 0);
-      state = state.copyWith(queue: newQueue);
-      play(q.tracks[0]);
-    }
+    skipNext();
   }
 
   // ─── Playback Controls ──────────────────────────────────────────────────────
@@ -199,10 +186,20 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
         isMiniPlayerVisible: true,
         position: Duration.zero,
       );
-      await _primary?.setUrl(track.audioUrl);
+      
+      await _primary?.stop();
+      
+      // just_audio requires setFilePath for local absolute paths on mobile
+      if (track.category == 'LOCAL' && !kIsWeb && !track.audioUrl.startsWith('data:')) {
+        await _primary?.setFilePath(track.audioUrl);
+      } else {
+        await _primary?.setUrl(track.audioUrl);
+      }
+      
       await _primary?.setVolume(state.primaryVolume);
       _primary?.play(); // Don't await, it completes when playback finishes
     } catch (e) {
+      debugPrint('Error playing track ${track.title}: $e');
       state = state.copyWith(isBuffering: false, isPlaying: false);
     }
   }
@@ -237,8 +234,26 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
 
   void skipNext() {
     final q = state.queue;
-    if (q.tracks.isEmpty || q.currentIndex >= q.tracks.length - 1) return;
-    final nextIndex = q.currentIndex + 1;
+    if (q.tracks.isEmpty) return;
+
+    int nextIndex = q.currentIndex + 1;
+
+    if (q.shuffle) {
+      if (q.tracks.length > 1) {
+        do {
+          nextIndex = DateTime.now().millisecondsSinceEpoch % q.tracks.length;
+        } while (nextIndex == q.currentIndex);
+      } else {
+        nextIndex = 0;
+      }
+    } else if (nextIndex >= q.tracks.length) {
+      if (state.repeatMode == AudioRepeatMode.all) {
+        nextIndex = 0;
+      } else {
+        return; // reached the end, no repeat all
+      }
+    }
+
     state = state.copyWith(queue: q.copyWith(currentIndex: nextIndex));
     play(q.tracks[nextIndex]);
   }
@@ -250,7 +265,25 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       seekTo(Duration.zero);
       return;
     }
-    final prevIndex = (q.currentIndex - 1).clamp(0, q.tracks.length - 1);
+
+    int prevIndex = q.currentIndex - 1;
+
+    if (q.shuffle) {
+      if (q.tracks.length > 1) {
+        do {
+          prevIndex = DateTime.now().millisecondsSinceEpoch % q.tracks.length;
+        } while (prevIndex == q.currentIndex);
+      } else {
+        prevIndex = 0;
+      }
+    } else if (prevIndex < 0) {
+      if (state.repeatMode == AudioRepeatMode.all) {
+        prevIndex = q.tracks.length - 1;
+      } else {
+        prevIndex = 0;
+      }
+    }
+
     state = state.copyWith(queue: q.copyWith(currentIndex: prevIndex));
     play(q.tracks[prevIndex]);
   }

@@ -59,6 +59,7 @@ class _GroundingHeroCardState extends ConsumerState<GroundingHeroCard>
   @override
   Widget build(BuildContext context) {
     final dashboardAsync = ref.watch(groundingDashboardProvider);
+    final historyState = ref.watch(groundingHistoryProvider);
 
     return AnimatedBuilder(
       animation: _glowAnimation,
@@ -131,7 +132,19 @@ class _GroundingHeroCardState extends ConsumerState<GroundingHeroCard>
                     _buildDivider(),
                     _buildStat("${dashboard.totalSessions}", "Sessions", Icons.self_improvement_rounded),
                     _buildDivider(),
-                    _buildStat("${dashboard.totalMinutes}m", "Grounded", Icons.timer_rounded),
+                    _buildStat(
+                      () {
+                        if (dashboard.totalMinutes > 0) return "${dashboard.totalMinutes}m";
+                        if (dashboard.totalSessions == 0) return "0s";
+                        
+                        // If totalMinutes is 0 but we have sessions, fallback to exact seconds from local history
+                        final totalSecs = historyState.sessions.fold(0, (a, b) => a + b.durationSecs);
+                        if (totalSecs > 0 && totalSecs < 60) return "${totalSecs}s";
+                        return "<1m";
+                      }(),
+                      "Grounded", 
+                      Icons.timer_rounded
+                    ),
                   ],
                 ),
                 loading: () => const SizedBox(height: 28),

@@ -40,8 +40,10 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
         if (playerState.current?.id != track.id) {
           ref.read(audioPlayerProvider.notifier).play(track);
         }
-        // Mark as played in backend
-        ref.read(audioDataServiceProvider).markPlayed(track.id);
+        if (track.category != 'LOCAL') {
+          // Mark as played in backend
+          ref.read(audioDataServiceProvider).markPlayed(track.id);
+        }
       }
     });
   }
@@ -105,38 +107,40 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
               ..._buildParticles(accentColor),
 
               SafeArea(
-                child: SingleChildScrollView(
+                child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      // ─── Top Bar ───────────────────────────────────────────
-                      _buildTopBar(track, playerState),
-                      const SizedBox(height: 20),
-
-                      // ─── Artwork ──────────────────────────────────────────
-                      _buildArtwork(track, accentColor, playerState.isPlaying),
-                      const SizedBox(height: 28),
-
-                      // ─── Track Info ───────────────────────────────────────
-                      _buildTrackInfo(track, playerState),
-                      const SizedBox(height: 24),
-
-                      // ─── Progress Bar ─────────────────────────────────────
-                      _buildProgressBar(playerState, progress),
-                      const SizedBox(height: 28),
-
-                      // ─── Playback Controls ────────────────────────────────
-                      _buildPlaybackControls(playerState, accentColor),
-                      const SizedBox(height: 24),
-
-                      // ─── Secondary Controls ───────────────────────────────
-                      _buildSecondaryControls(track, playerState, accentColor),
-                      const SizedBox(height: 16),
-
-                      // ─── Speed Selector ───────────────────────────────────
-                      _buildSpeedSelector(),
-                    ],
-                  ),
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // ─── Top Bar ───────────────────────────────────────────
+                          _buildTopBar(track, playerState),
+                          
+                          // ─── Artwork ──────────────────────────────────────────
+                          _buildArtwork(track, accentColor, playerState.isPlaying),
+                          
+                          // ─── Track Info ───────────────────────────────────────
+                          _buildTrackInfo(track, playerState),
+                          
+                          // ─── Progress Bar ─────────────────────────────────────
+                          _buildProgressBar(playerState, progress),
+                          
+                          // ─── Playback Controls ────────────────────────────────
+                          _buildPlaybackControls(playerState, accentColor),
+                          
+                          // ─── Secondary Controls ───────────────────────────────
+                          _buildSecondaryControls(track, playerState, accentColor),
+                          
+                          // ─── Speed Selector ───────────────────────────────────
+                          _buildSpeedSelector(),
+                          
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
