@@ -121,9 +121,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
             ),
           ),
           
-          SafeArea(
-            bottom: false,
-            child: Positioned.fill(
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
               child: _buildDeepConversation(messages, isThinking),
             ),
           ),
