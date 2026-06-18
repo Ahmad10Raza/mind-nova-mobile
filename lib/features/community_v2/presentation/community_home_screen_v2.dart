@@ -8,12 +8,40 @@ import '../models/community_post_model.dart';
 import '../models/community_insight_model.dart';
 import '../models/community_room_model.dart';
 import 'widgets/create_post_sheet.dart';
+import 'widgets/comments_sheet.dart';
+import '../../auth/providers/auth_provider.dart';
 
-class CommunityHomeScreenV2 extends ConsumerWidget {
+class CommunityHomeScreenV2 extends ConsumerStatefulWidget {
   const CommunityHomeScreenV2({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityHomeScreenV2> createState() => _CommunityHomeScreenV2State();
+}
+
+class _CommunityHomeScreenV2State extends ConsumerState<CommunityHomeScreenV2> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 500) {
+      ref.read(communityFeedProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F131F),
       body: Stack(
@@ -48,6 +76,7 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
           
           // ─── Main Content ───
           CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Custom App Bar (Fixed layout and removing back button)
@@ -139,8 +168,19 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
                     const SizedBox(height: 24),
                     _buildFeedTabs(ref),
                     const SizedBox(height: 16),
-                    _buildReflectionsFeed(context, ref),
-                    
+                  ]),
+                ),
+              ),
+              
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                sliver: _buildReflectionsFeedSliver(context, ref),
+              ),
+              
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
                     const SizedBox(height: 40),
                     
                     _buildCommunityImpact(ref),
@@ -362,25 +402,39 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
 
 
 
-  Widget _buildReflectionsFeed(BuildContext context, WidgetRef ref) {
+  Widget _buildReflectionsFeedSliver(BuildContext context, WidgetRef ref) {
     final feedAsync = ref.watch(communityFeedProvider);
+    final authState = ref.watch(authProvider);
+    final currentUserId = authState.userId ?? '';
 
     return feedAsync.when(
       data: (posts) {
         if (posts.isEmpty) {
-          return _buildEmptyState(
-            message: "Every healing journey begins with a single step.",
-            actionText: "Share first reflection",
-            icon: Icons.edit_note_rounded,
-            onActionTap: () => showCreatePostSheet(context),
+          return SliverToBoxAdapter(
+            child: _buildEmptyState(
+              message: "Every healing journey begins with a single step.",
+              actionText: "Share first reflection",
+              icon: Icons.edit_note_rounded,
+              onActionTap: () => showCreatePostSheet(context),
+            ),
           );
         }
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: posts.length, 
+        
+        final isLoadingMore = ref.watch(communityFeedProvider.notifier).isLoadingMore;
+
+        return SliverList.separated(
+          itemCount: posts.length + (isLoadingMore ? 1 : 0), 
           separatorBuilder: (_, __) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
+            if (index == posts.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFFAFD3)),
+                ),
+              );
+            }
+
             final post = posts[index];
             final hoursAgo = DateTime.now().difference(post.createdAt).inHours;
             final timeString = hoursAgo == 0 ? 'Just now' : '${hoursAgo}h ago';
@@ -458,11 +512,11 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
                       spacing: 12,
                       runSpacing: 12,
                       children: [
-                        // New PRD Reactions: Support, Relate, Inspired, Hope
-                        _buildReactionButton(ref, post.id, '💜', post.reactionCounts['SUPPORT'] ?? 0, 'SUPPORT', 'Support'),
-                        _buildReactionButton(ref, post.id, '🫂', post.reactionCounts['RELATE'] ?? 0, 'RELATE', 'Relate'),
-                        _buildReactionButton(ref, post.id, '🌱', post.reactionCounts['INSPIRED'] ?? 0, 'INSPIRED', 'Inspired'),
-                        _buildReactionButton(ref, post.id, '✨', post.reactionCounts['HOPE'] ?? 0, 'HOPE', 'Hope'),
+                        _buildReactionButton(ref, post.id, '💜', post.reactionCounts['SUPPORT'] ?? 0, 'SUPPORT', 'Support', isActive: post.hasReacted('SUPPORT', currentUserId)),
+                        _buildReactionButton(ref, post.id, '🫂', post.reactionCounts['RELATE'] ?? 0, 'RELATE', 'Relate', isActive: post.hasReacted('RELATE', currentUserId)),
+                        _buildReactionButton(ref, post.id, '🌱', post.reactionCounts['INSPIRED'] ?? 0, 'INSPIRED', 'Inspired', isActive: post.hasReacted('INSPIRED', currentUserId)),
+                        _buildReactionButton(ref, post.id, '✨', post.reactionCounts['HOPE'] ?? 0, 'HOPE', 'Hope', isActive: post.hasReacted('HOPE', currentUserId)),
+                        _buildCommentButton(context, ref, post.id, post.commentsCount),
                       ],
                     ),
                   ),
@@ -472,12 +526,19 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFFFAFD3))),
-      error: (e, s) => Text('Error loading feed', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+      loading: () => const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.all(40.0),
+          child: Center(child: CircularProgressIndicator(color: Color(0xFFFFAFD3))),
+        ),
+      ),
+      error: (e, s) => SliverToBoxAdapter(
+        child: Center(child: Text('Error loading feed: $e', style: TextStyle(color: Colors.white.withOpacity(0.5)))),
+      ),
     );
   }
 
-  Widget _buildReactionButton(WidgetRef ref, String postId, String emoji, int count, String type, String label) {
+  Widget _buildReactionButton(WidgetRef ref, String postId, String emoji, int count, String type, String label, {bool isActive = false}) {
     return GestureDetector(
       onTap: () {
         ref.read(postReactionProvider.notifier).toggleReaction(postId, type);
@@ -485,9 +546,9 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: isActive ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: isActive ? Colors.white.withOpacity(0.3) : Colors.white.withOpacity(0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -508,6 +569,51 @@ class CommunityHomeScreenV2 extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCommentButton(BuildContext context, WidgetRef ref, String postId, int count) {
+    return GestureDetector(
+      onTap: () {
+        _showCommentsSheet(context, ref, postId);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.mode_comment_outlined, size: 14, color: Color(0xFFCBC3D7)),
+            const SizedBox(width: 8),
+            Text(
+              'Comment',
+              style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFFCBC3D7)),
+            ),
+            if (count > 0) ...[
+              const SizedBox(width: 6),
+              Text(
+                count.toString(),
+                style: GoogleFonts.manrope(fontSize: 12, color: const Color(0xFFCBC3D7).withOpacity(0.5)),
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCommentsSheet(BuildContext context, WidgetRef ref, String postId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return CommentsSheet(postId: postId);
+      },
     );
   }
 

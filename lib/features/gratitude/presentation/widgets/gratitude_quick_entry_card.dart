@@ -154,14 +154,21 @@ class _GratitudeQuickEntryCardState extends ConsumerState<GratitudeQuickEntryCar
                   backgroundColor: const Color(0xFFFFD700), // Gold Button
                   foregroundColor: const Color(0xFF1B1F2C),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 ),
-                child: Text(
-                  'Save',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.edit_rounded, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Log Gratitude',
+                      style: GoogleFonts.manrope(fontWeight: FontWeight.w800, fontSize: 14),
+                    ),
+                  ],
                 ),
               )
             ],

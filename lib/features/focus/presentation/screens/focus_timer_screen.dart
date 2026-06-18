@@ -20,7 +20,7 @@ class FocusTimerScreen extends ConsumerStatefulWidget {
 class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
   final TextEditingController _intentController = TextEditingController();
   FocusMode _selectedMode = FocusMode.deepWork;
-  int _selectedMinutes = 25;
+  late int _selectedMinutes = _selectedMode.defaultMinutes;
   AudioTrack? _selectedTrack;
 
   @override
@@ -81,7 +81,13 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
       floating: true,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-        onPressed: () => context.pop(),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/tools');
+          }
+        },
       ),
       title: Text(
         'ZEN FOCUS',
@@ -242,7 +248,10 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> {
               return GestureDetector(
                 onTap: () {
                   HapticFeedback.mediumImpact();
-                  setState(() => _selectedMode = mode);
+                  setState(() {
+                    _selectedMode = mode;
+                    _selectedMinutes = mode.defaultMinutes;
+                  });
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),

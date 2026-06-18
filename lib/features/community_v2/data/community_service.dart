@@ -1,5 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../models/community_post_model.dart';
+import '../models/community_comment_model.dart';
 import '../models/community_insight_model.dart';
 import '../models/community_room_model.dart';
 
@@ -7,6 +8,30 @@ class CommunityService {
   final ApiClient _apiClient;
 
   CommunityService(this._apiClient);
+
+  Future<List<CommunityComment>> getComments(String postId) async {
+    try {
+      final response = await _apiClient.get('/community/post/$postId/comments');
+      if (response.data is List) {
+        return (response.data as List).map((json) => CommunityComment.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to load comments: $e');
+    }
+  }
+
+  Future<void> addComment(String postId, String content, {bool isAnonymous = true}) async {
+    try {
+      await _apiClient.post('/community/post/comment', data: {
+        'postId': postId,
+        'content': content,
+        'isAnonymous': isAnonymous,
+      });
+    } catch (e) {
+      throw Exception('Failed to add comment: $e');
+    }
+  }
 
   Future<List<CommunityPost>> getFeed({int page = 1, int limit = 20, String tab = 'FOR_YOU'}) async {
     try {

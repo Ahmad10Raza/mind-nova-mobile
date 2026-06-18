@@ -331,34 +331,42 @@ class _BreathingPulseState extends State<BreathingPulse> with SingleTickerProvid
   }
 }
 
-class RescueModeSheet extends StatefulWidget {
+class RescueModeSheet extends ConsumerStatefulWidget {
   const RescueModeSheet({super.key});
 
   @override
-  State<RescueModeSheet> createState() => _RescueModeSheetState();
+  ConsumerState<RescueModeSheet> createState() => _RescueModeSheetState();
 }
 
-class _RescueModeSheetState extends State<RescueModeSheet> {
+class _RescueModeSheetState extends ConsumerState<RescueModeSheet> {
   int _step = 1;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 32),
-            if (_step == 1) _buildStep1(),
-            if (_step == 2) _buildStep2(),
-            if (_step == 3) _buildStep3(),
-          ],
+    // Scaffold/Material needed for TextField, but bottom sheet provides Material.
+    // Wrap in Scaffold with transparent background to handle keyboard properly.
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              children: [
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(height: 32),
+                Expanded(
+                  child: _step == 1 ? _buildStep1() : _step == 2 ? _buildStep2() : _buildStep3(),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -449,7 +457,7 @@ class _RescueModeSheetState extends State<RescueModeSheet> {
         const Spacer(),
         _buildNextButton('START SPRINT', () {
           Navigator.pop(context);
-          // Set timer to 3 mins
+          ref.read(focusProvider.notifier).startRescueSprint();
         }),
       ],
     );

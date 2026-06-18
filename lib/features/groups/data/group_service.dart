@@ -59,9 +59,26 @@ class GroupService {
     );
   }
 
-  Future<List<GroupPostModel>> getGroupFeed(String groupId) async {
-    final response = await _dio.get('${NetworkConstants.baseUrl}/groups/$groupId/feed');
+  Future<List<GroupPostModel>> getGroupFeed(String groupId, {int page = 1, int limit = 20}) async {
+    final response = await _dio.get(
+      '${NetworkConstants.baseUrl}/groups/$groupId/feed',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+      },
+    );
     return (response.data as List).map((e) => GroupPostModel.fromJson(e)).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> getGroupChatHistory(String groupId, {int page = 1, int limit = 50}) async {
+    final response = await _dio.get(
+      '${NetworkConstants.baseUrl}/groups/$groupId/chat',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+      },
+    );
+    return List<Map<String, dynamic>>.from(response.data);
   }
 
   Future<GroupPostModel> getPost(String postId) async {
@@ -69,12 +86,13 @@ class GroupService {
     return GroupPostModel.fromJson(response.data);
   }
 
-  Future<void> checkIn(String groupId, String emotion, String? note) async {
+  Future<void> checkIn(String groupId, String emotion, String? note, {bool isAnonymous = true}) async {
     await _dio.post(
       '${NetworkConstants.baseUrl}/groups/$groupId/checkin',
       data: {
         'emotion': emotion,
         'note': note,
+        'isAnonymous': isAnonymous,
       },
     );
   }

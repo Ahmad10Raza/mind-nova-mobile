@@ -63,6 +63,10 @@ class CommunityPost {
       reactionCounts: counts,
     );
   }
+
+  bool hasReacted(String type, String currentUserId) {
+    return reactions.any((r) => r.type == type && r.userId == currentUserId);
+  }
 }
 
 class PostReaction {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/group_provider.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class CheckInWidget extends ConsumerStatefulWidget {
   final String groupId;
@@ -17,6 +18,7 @@ class _CheckInWidgetState extends ConsumerState<CheckInWidget> {
   String? _selectedEmotion;
   final TextEditingController _noteController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isAnonymous = true;
 
   final List<Map<String, dynamic>> _emotions = [
     {'label': 'Anxious', 'icon': '😰'},
@@ -119,6 +121,58 @@ class _CheckInWidgetState extends ConsumerState<CheckInWidget> {
             ),
           ),
           const SizedBox(height: 24),
+          Consumer(
+            builder: (context, ref, child) {
+              final auth = ref.watch(authProvider);
+              final displayName = auth.displayName ?? 'Your Name';
+              
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          _isAnonymous ? Icons.visibility_off_rounded : Icons.visibility_rounded, 
+                          color: const Color(0xFFB388FF), 
+                          size: 20
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Post Anonymously',
+                                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _isAnonymous ? 'Your identity will be hidden' : 'Posting publicly as $displayName',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12, 
+                                  color: _isAnonymous ? Colors.white38 : const Color(0xFF44E2CD),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _isAnonymous,
+                    onChanged: (val) => setState(() => _isAnonymous = val),
+                    activeColor: const Color(0xFF0F131F),
+                    activeTrackColor: const Color(0xFFB388FF),
+                    inactiveThumbColor: Colors.white38,
+                    inactiveTrackColor: Colors.white.withOpacity(0.1),
+                  ),
+                ],
+              );
+            }
+          ),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -161,6 +215,7 @@ class _CheckInWidgetState extends ConsumerState<CheckInWidget> {
         widget.groupId,
         _selectedEmotion!,
         _noteController.text,
+        isAnonymous: _isAnonymous,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

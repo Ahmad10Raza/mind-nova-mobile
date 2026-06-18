@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/group_provider.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class GroupCreatePostSheet extends ConsumerStatefulWidget {
   final String groupId;
@@ -214,32 +215,56 @@ class _GroupCreatePostSheetState extends ConsumerState<GroupCreatePostSheet> {
             const SizedBox(height: 24),
             
             // Anonymous Toggle
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+            Consumer(
+              builder: (context, ref, child) {
+                final auth = ref.watch(authProvider);
+                final displayName = auth.displayName ?? 'Your Name';
+                
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      _isAnonymous ? Icons.visibility_off_rounded : Icons.visibility_rounded, 
-                      color: const Color(0xFFD0BCFF), 
-                      size: 20
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isAnonymous ? Icons.visibility_off_rounded : Icons.visibility_rounded, 
+                            color: const Color(0xFFD0BCFF), 
+                            size: 20
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Post Anonymously',
+                                  style: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFFDFE2F3)),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _isAnonymous ? 'Your identity will be hidden' : 'Posting publicly as $displayName',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 12, 
+                                    color: _isAnonymous ? const Color(0xFFCBC3D7) : const Color(0xFF44E2CD),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Post Anonymously',
-                      style: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFFDFE2F3)),
+                    Switch(
+                      value: _isAnonymous,
+                      onChanged: (val) => setState(() => _isAnonymous = val),
+                      activeColor: const Color(0xFF0F131F),
+                      activeTrackColor: const Color(0xFFD0BCFF),
+                      inactiveThumbColor: const Color(0xFFCBC3D7),
+                      inactiveTrackColor: Colors.white.withOpacity(0.1),
                     ),
                   ],
-                ),
-                Switch(
-                  value: _isAnonymous,
-                  onChanged: (val) => setState(() => _isAnonymous = val),
-                  activeColor: const Color(0xFF0F131F),
-                  activeTrackColor: const Color(0xFFD0BCFF),
-                  inactiveThumbColor: const Color(0xFFCBC3D7),
-                  inactiveTrackColor: Colors.white.withOpacity(0.1),
-                ),
-              ],
+                );
+              }
             ),
             
             const SizedBox(height: 24),

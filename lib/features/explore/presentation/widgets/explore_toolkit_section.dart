@@ -182,6 +182,7 @@ class ExploreToolkitSection extends StatelessWidget {
                 child: Image.asset(
                   item.imagePath,
                   fit: BoxFit.cover,
+                  cacheWidth: 500, // Optimize decoding for mobile memory limits
                   errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.withOpacity(0.1)),
                 ),
               ),

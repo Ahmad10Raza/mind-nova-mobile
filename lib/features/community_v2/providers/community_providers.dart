@@ -4,6 +4,7 @@ import '../data/community_service.dart';
 import '../models/community_post_model.dart';
 import '../models/community_insight_model.dart';
 import '../models/community_room_model.dart';
+import '../models/community_comment_model.dart';
 
 final communityServiceProvider = Provider<CommunityService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -23,10 +24,52 @@ final communityFeedTabProvider = NotifierProvider<CommunityFeedTabNotifier, Stri
   return CommunityFeedTabNotifier();
 });
 
-final communityFeedProvider = FutureProvider<List<CommunityPost>>((ref) async {
-  final service = ref.watch(communityServiceProvider);
-  final tab = ref.watch(communityFeedTabProvider);
-  return service.getFeed(page: 1, limit: 20, tab: tab);
+class CommunityFeedNotifier extends AsyncNotifier<List<CommunityPost>> {
+  int _currentPage = 1;
+  bool hasMore = true;
+  bool isLoadingMore = false;
+
+  @override
+  Future<List<CommunityPost>> build() async {
+    _currentPage = 1;
+    hasMore = true;
+    isLoadingMore = false;
+    final tab = ref.watch(communityFeedTabProvider);
+    final service = ref.watch(communityServiceProvider);
+    
+    final posts = await service.getFeed(page: _currentPage, limit: 20, tab: tab);
+    hasMore = posts.length >= 20;
+    return posts;
+  }
+
+  Future<void> loadMore() async {
+    if (isLoadingMore || !hasMore) return;
+    
+    isLoadingMore = true;
+    final currentPosts = state.value ?? [];
+    state = AsyncData([...currentPosts]); // Force rebuild to show loader
+    
+    try {
+      final service = ref.read(communityServiceProvider);
+      final tab = ref.read(communityFeedTabProvider);
+      
+      final nextPosts = await service.getFeed(page: _currentPage + 1, limit: 20, tab: tab);
+      _currentPage++;
+      
+      hasMore = nextPosts.length >= 20;
+      
+      state = AsyncData([...currentPosts, ...nextPosts]);
+    } catch (e, st) {
+      // In production, we'd log the error or show a toast. For now, keep existing data.
+    } finally {
+      isLoadingMore = false;
+      state = AsyncData([...state.value ?? []]); // Force rebuild to hide loader
+    }
+  }
+}
+
+final communityFeedProvider = AsyncNotifierProvider<CommunityFeedNotifier, List<CommunityPost>>(() {
+  return CommunityFeedNotifier();
 });
 
 final communityInsightsProvider = FutureProvider<CommunityInsight>((ref) async {
@@ -67,4 +110,33 @@ class PostReactionNotifier extends Notifier<AsyncValue<void>> {
 
 final postReactionProvider = NotifierProvider<PostReactionNotifier, AsyncValue<void>>(() {
   return PostReactionNotifier();
+});
+
+final postCommentsProvider = FutureProvider.family<List<CommunityComment>, String>((ref, postId) async {
+  final service = ref.watch(communityServiceProvider);
+  return service.getComments(postId);
+});
+
+class CommentSubmitNotifier extends Notifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() {
+    return const AsyncData(null);
+  }
+
+  Future<void> submitComment(String postId, String content, {bool isAnonymous = true}) async {
+    final service = ref.read(communityServiceProvider);
+    try {
+      state = const AsyncLoading();
+      await service.addComment(postId, content, isAnonymous: isAnonymous);
+      ref.invalidate(postCommentsProvider(postId));
+      ref.invalidate(communityFeedProvider);
+      state = const AsyncData(null);
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+    }
+  }
+}
+
+final commentSubmitProvider = NotifierProvider<CommentSubmitNotifier, AsyncValue<void>>(() {
+  return CommentSubmitNotifier();
 });

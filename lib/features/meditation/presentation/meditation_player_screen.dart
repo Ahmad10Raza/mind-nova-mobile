@@ -174,7 +174,15 @@ class _MeditationPlayerScreenState extends ConsumerState<MeditationPlayerScreen>
     _completionController.dispose();
     _breathTimer?.cancel();
     _sessionTimer?.cancel();
-    _audioPlayer.dispose();
+    
+    // Explicitly stop the player before disposing to prevent ghost audio
+    // on certain platforms (like web) when the screen is closed
+    _audioPlayer.stop().then((_) {
+      _audioPlayer.dispose();
+    }).catchError((_) {
+      _audioPlayer.dispose();
+    });
+    
     super.dispose();
   }
 

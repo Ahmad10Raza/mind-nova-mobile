@@ -120,29 +120,6 @@ class GratitudeHeroCard extends ConsumerWidget {
               ),
             ),
             
-          const SizedBox(height: 24),
-
-          // ─── CTA Buttons ─────────────────────────────────────────
-          SizedBox(
-            height: 54,
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.edit_rounded, size: 20, color: Color(0xFF1B1F2C)),
-              label: Text(
-                'Log Gratitude',
-                style: GoogleFonts.manrope(fontWeight: FontWeight.w800, fontSize: 16, color: const Color(0xFF1B1F2C)),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700), // Gold Button
-                elevation: 4,
-                shadowColor: const Color(0xFFFFD700).withOpacity(0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

@@ -28,6 +28,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
   late TabController _tabController;
   GroupChatService? _chatService;
   final List<Map<String, dynamic>> _messages = [];
+  bool _isLoadingChat = false;
   final TextEditingController _messageController = TextEditingController();
   String _selectedFeedTab = 'FOR_YOU';
 
@@ -57,6 +58,51 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
         ref.invalidate(groupFeedProvider(widget.groupId));
       },
     );
+    
+    // Load initial chat history
+    _loadChatHistory();
+  }
+
+  Future<void> _loadChatHistory() async {
+    setState(() => _isLoadingChat = true);
+    try {
+      final history = await ref.read(groupServiceProvider).getGroupChatHistory(widget.groupId);
+      final mappedHistory = history.map((msg) {
+        return {
+          'userId': msg['userId'],
+          'userName': msg['user']?['profile']?['firstName'] ?? 'Member',
+          'content': msg['content'],
+          'toneLabel': msg['isFlagged'] == true ? 'FLAGGED' : null,
+          'createdAt': msg['createdAt'],
+        };
+      }).toList();
+      
+      // Backend returns desc (newest first). 
+      // We need it in asc (oldest first) so that appending new messages to the end works correctly.
+      final reversedHistory = mappedHistory.reversed.toList();
+      
+      if (mounted) {
+        setState(() {
+          // Add historical messages to the list
+          _messages.addAll(reversedHistory);
+          _isLoadingChat = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingChat = false);
+        debugPrint('Failed to load chat history: $e');
+      }
+    }
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (_tabController.index == 0) {
+      if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 500) {
+        ref.read(groupFeedProvider(widget.groupId).notifier).loadMore();
+      }
+    }
+    return false;
   }
 
   @override
@@ -74,8 +120,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
     return groupDetail.when(
       data: (group) => Scaffold(
         backgroundColor: const Color(0xFF0F0F12),
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
@@ -171,6 +219,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
               _buildStatsTab(),
             ],
           ),
+        ),
         ),
         floatingActionButton: group.isMember && _tabController.index == 0
             ? FloatingActionButton(
@@ -289,47 +338,75 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
 
   Widget _buildFeedTab(String currentUserId) {
     final feed = ref.watch(groupFeedProvider(widget.groupId));
-    return feed.when(
-      data: (posts) {
-        return ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _buildAlertBanner(
-              '1 people felt lonely today. You\'re not alone.',
-              const Color(0xFF1E1B2E),
-              const Color(0xFFB388FF),
-              Icons.groups_rounded,
-            ),
-            const SizedBox(height: 16),
-            _buildSharePrompt(),
-            const SizedBox(height: 24),
-            _buildFeedTabs(),
-            const SizedBox(height: 20),
-            if (posts.isEmpty)
-              _buildEmptyFeed()
-            else
-              ..._getSortedPosts(posts).map((post) => GroupPostCard(
-                post: post,
-                currentUserId: currentUserId,
-                onTap: () => context.push('/groups/posts/${post.id}'),
-                onComment: () => context.push('/groups/posts/${post.id}'),
-                onBookmark: () {
-                  // TODO: Implement group post bookmarking if needed
+    final isLoadingMore = ref.watch(groupFeedProvider(widget.groupId).notifier).isLoadingMore;
+
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              _buildAlertBanner(
+                '1 people felt lonely today. You\'re not alone.',
+                const Color(0xFF1E1B2E),
+                const Color(0xFFB388FF),
+                Icons.groups_rounded,
+              ),
+              const SizedBox(height: 16),
+              _buildSharePrompt(),
+              const SizedBox(height: 24),
+              _buildFeedTabs(),
+            ]),
+          ),
+        ),
+        
+        feed.when(
+          data: (posts) {
+            if (posts.isEmpty) {
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildEmptyFeed(),
+                ),
+              );
+            }
+            final sortedPosts = _getSortedPosts(posts);
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList.separated(
+                itemCount: sortedPosts.length + (isLoadingMore ? 1 : 0),
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  if (index == sortedPosts.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Color(0xFFB388FF)),
+                      ),
+                    );
+                  }
+                  final post = sortedPosts[index];
+                  return GroupPostCard(
+                    post: post,
+                    currentUserId: currentUserId,
+                    onTap: () => context.push('/groups/posts/${post.id}'),
+                    onComment: () => context.push('/groups/posts/${post.id}'),
+                    onBookmark: () {},
+                    onReport: () {},
+                    onReact: (type) async {
+                      ref.read(groupFeedProvider(widget.groupId).notifier).toggleReaction(post.id, type, currentUserId);
+                    },
+                  );
                 },
-                onReport: () {
-                  // TODO: Implement reporting
-                },
-                onReact: (type) async {
-                  await ref.read(groupServiceProvider).toggleReaction(post.id, type);
-                  ref.invalidate(groupFeedProvider(widget.groupId));
-                },
-              )).toList(),
-            const SizedBox(height: 100), // Spacing for fab
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error loading feed: $e')),
+              ),
+            );
+          },
+          loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+          error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('Error loading feed'))),
+        ),
+        
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+      ],
     );
   }
 
@@ -519,15 +596,33 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> with Sing
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(20),
-            reverse: true,
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final msg = _messages[_messages.length - 1 - index];
-              return _buildChatBubble(msg);
-            },
-          ),
+          child: _isLoadingChat && _messages.isEmpty
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFFB388FF)))
+              : _messages.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No messages yet. Say hello!',
+                        style: GoogleFonts.inter(color: Colors.white24),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      reverse: true,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        // The list is populated with history (descending order) and new messages.
+                        // Wait, _messages.add(msg) appends to the end of the list.
+                        // And history is returned in 'desc' order (newest first).
+                        // If we use reverse: true, index 0 should be the newest message.
+                        // So if we have history (newest to oldest), and we append new messages,
+                        // new messages are at the END of the list.
+                        // This means the list order is: [oldest... newest (history)] -> [newest (socket)].
+                        // Let's just fix the _messages order mapping!
+                        // Actually, we'll fix the index logic directly below.
+                        final msg = _messages[_messages.length - 1 - index];
+                        return _buildChatBubble(msg);
+                      },
+                    ),
         ),
         _buildChatInput(),
       ],

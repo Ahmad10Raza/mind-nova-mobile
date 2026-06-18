@@ -53,6 +53,17 @@ class _AudioPlayerScreenState extends ConsumerState<AudioPlayerScreen>
     _glowController.dispose();
     _particleController.dispose();
     _artworkController.dispose();
+    
+    // Stop audio when the user closes the screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) return;
+      try {
+        ref.read(audioPlayerProvider.notifier).pause();
+      } catch (e) {
+        // Provider might already be disposed
+      }
+    });
+
     super.dispose();
   }
 

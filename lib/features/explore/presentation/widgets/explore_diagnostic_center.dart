@@ -83,6 +83,7 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
                 buttonText: depression['buttonText'],
                 color: AppColors.secondary,
                 buttonColor: depression['isCompleted'] ? AppColors.textMuted : null,
+                imageAsset: 'assets/images/explore/depression.png',
                 onTap: _getOnTap(depression, 'depression'),
               ),
               _buildAssessmentCard(
@@ -92,6 +93,7 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
                 buttonText: anxiety['buttonText'],
                 color: AppColors.primary,
                 buttonColor: anxiety['isCompleted'] ? AppColors.textMuted : null,
+                imageAsset: 'assets/images/explore/anxiety.png',
                 onTap: _getOnTap(anxiety, 'anxiety'),
               ),
               Opacity(
@@ -103,6 +105,7 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
                   buttonText: stress['buttonText'],
                   color: AppColors.tertiary,
                   buttonColor: stress['isCompleted'] ? AppColors.textMuted : null,
+                  imageAsset: 'assets/images/explore/stress.png',
                   onTap: _getOnTap(stress, 'stress'),
                 ),
               ),
@@ -113,6 +116,7 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
                 buttonText: ptsd['buttonText'],
                 color: AppColors.primary,
                 buttonColor: ptsd['isCompleted'] ? AppColors.textMuted : null,
+                imageAsset: 'assets/images/explore/ptsd.png',
                 onTap: _getOnTap(ptsd, 'ptsd'),
               ),
             ],
@@ -129,44 +133,79 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
     required String buttonText,
     required Color color,
     Color? buttonColor,
+    required String imageAsset,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.s16),
         decoration: BoxDecoration(
           color: AppColors.backgroundSecondary.withOpacity(0.5),
           borderRadius: AppRadius.lg,
+          image: DecorationImage(
+            image: AssetImage(imageAsset),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.4), // Darken the image slightly for text readability
+              BlendMode.darken,
+            ),
+          ),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: Text(title, style: AppTypography.labelLarge)),
-                AppSpacing.h8,
-                Text(status, style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted)),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.lg,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.8),
               ],
+              stops: const [0.4, 1.0],
             ),
-            const Spacer(),
-            ClipRRect(
-              borderRadius: AppRadius.full,
-              child: LinearProgressIndicator(
-                value: progress > 0 ? progress : 0,
-                backgroundColor: Colors.white.withOpacity(0.1),
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-                minHeight: 6,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: Text(title, style: AppTypography.labelLarge.copyWith(shadows: [Shadow(color: Colors.black, blurRadius: 4)]))),
+                  AppSpacing.h8,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(status, style: AppTypography.labelSmall.copyWith(color: Colors.white70)),
+                  ),
+                ],
               ),
-            ),
-            AppSpacing.v12,
-            Text(
-              buttonText,
-              style: AppTypography.labelMedium.copyWith(color: buttonColor ?? AppColors.primary),
-            ),
-          ],
+              const Spacer(),
+              ClipRRect(
+                borderRadius: AppRadius.full,
+                child: LinearProgressIndicator(
+                  value: progress > 0 ? progress : 0,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                  minHeight: 6,
+                ),
+              ),
+              AppSpacing.v12,
+              Text(
+                buttonText,
+                style: AppTypography.labelMedium.copyWith(
+                  color: buttonColor ?? color,
+                  fontWeight: FontWeight.bold,
+                  shadows: [Shadow(color: Colors.black, blurRadius: 4)]
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

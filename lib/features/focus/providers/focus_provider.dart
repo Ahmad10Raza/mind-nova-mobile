@@ -253,6 +253,19 @@ class FocusNotifier extends Notifier<FocusState> with WidgetsBindingObserver {
     _saveLocalState();
   }
 
+  void startRescueSprint() {
+    state = state.copyWith(remainingSeconds: 180, isPaused: false);
+    if (_isMobile) {
+      // Re-start the background service timer with 180 seconds
+      FlutterBackgroundService().invoke('startTimer', {
+        'seconds': 180,
+      });
+    } else {
+      _startTimer();
+    }
+    _saveLocalState();
+  }
+
   Future<void> endSession({String? moodAfter}) async {
     if (state.activeSession == null) return;
     

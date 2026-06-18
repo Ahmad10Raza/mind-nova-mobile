@@ -33,6 +33,18 @@ extension FocusModeExtension on FocusMode {
     }
   }
 
+  int get defaultMinutes {
+    switch (this) {
+      case FocusMode.calmStart: return 10;
+      case FocusMode.deepWork: return 60;
+      case FocusMode.studySprint: return 25;
+      case FocusMode.flowState: return 90;
+      case FocusMode.rescueMode: return 15;
+      case FocusMode.examMode: return 50;
+      case FocusMode.custom: return 25;
+    }
+  }
+
   String toJson() {
     switch (this) {
       case FocusMode.calmStart: return 'CALM_START';
