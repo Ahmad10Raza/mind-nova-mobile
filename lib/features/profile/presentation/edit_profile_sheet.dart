@@ -28,6 +28,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   late Set<String> _selectedGoals;
 
   XFile? _pickedImage;
+  Uint8List? _pickedImageBytes;
   bool _isLoading = false;
 
   final List<String> _ageRanges = [
@@ -68,7 +69,11 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (image != null) {
-      setState(() => _pickedImage = image);
+      final bytes = await image.readAsBytes();
+      setState(() {
+        _pickedImage = image;
+        _pickedImageBytes = bytes;
+      });
     }
   }
 
@@ -79,9 +84,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
     
     // 1. Upload Avatar if picked
     String? newAvatarUrl;
-    if (_pickedImage != null && !isGuest) {
+    if (_pickedImage != null && _pickedImageBytes != null && !isGuest) {
       newAvatarUrl = await ref.read(profileServiceProvider).uploadAvatar(
-        await _pickedImage!.readAsBytes(),
+        _pickedImageBytes!,
         _pickedImage!.name,
       );
     }
@@ -185,8 +190,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                                     border: Border.all(color: const Color(0xFF5E4B8B).withOpacity(0.1), width: 2),
                                   ),
                                   child: ClipOval(
-                                    child: _pickedImage != null
-                                      ? (kIsWeb ? Image.network(_pickedImage!.path, fit: BoxFit.cover) : Image.file(File(_pickedImage!.path), fit: BoxFit.cover))
+                                    child: _pickedImageBytes != null
+                                      ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
                                       : ref.watch(authProvider).avatarUrl != null && ref.watch(authProvider).avatarUrl!.isNotEmpty
                                         ? Image.network(
                                             ref.watch(authProvider).avatarUrl!.startsWith('http') 
