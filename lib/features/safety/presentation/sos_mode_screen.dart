@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -225,6 +226,12 @@ class _SosModeScreenState extends ConsumerState<SosModeScreen>
                             // 2. 988 Lifeline (Always show as primary or secondary)
                             _buildLifelineCard(),
                             
+                            // Quick SMS (If user has contacts with allowQuickSms)
+                            if (state.smsContacts.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              _buildQuickSmsCard(state.smsContacts),
+                            ],
+                            
                             // 3. Other contacts
                             if (state.contacts.length > 1) ...[
                               const SizedBox(height: 16),
@@ -380,6 +387,60 @@ class _SosModeScreenState extends ConsumerState<SosModeScreen>
             ),
             const Spacer(),
             const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickSmsCard(List<EmergencyContact> smsContacts) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.heavyImpact();
+        ref.read(safetyProvider.notifier).logAction('SOS_QUICK_SMS');
+        
+        final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+        final separator = isIOS ? ',' : ';';
+        final numbers = smsContacts.map((c) => c.phoneNumber).join(separator);
+        
+        const msg = "SOS: I am having a difficult time and need support. Please reach out to me.";
+        launchUrl(Uri.parse('sms:$numbers?body=${Uri.encodeComponent(msg)}'));
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E88E5).withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.message_rounded, color: Colors.white, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Alert Trusted Contacts',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18, fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    )),
+                  Text('Send SMS to ${smsContacts.length} people',
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
+                ],
+              ),
+            ),
+            const Icon(Icons.send_rounded, color: Colors.white54, size: 16),
           ],
         ),
       ),

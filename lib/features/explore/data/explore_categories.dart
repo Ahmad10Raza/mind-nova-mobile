@@ -82,7 +82,7 @@ class ExploreCategories {
       icon: Icons.health_and_safety_rounded,
       gradient: AppGradients.recovery,
       accentColor: AppColors.recoveryBlue,
-      routes: ['/therapist', '/assessment', '/crisis-support'],
+      routes: ['/therapist', '/assessment', '/crisis-hub'],
     ),
   ];
 }
@@ -189,6 +189,6 @@ class FeelingShortcuts {
     FeelingShortcut(label: 'I feel overwhelmed', route: '/grounding', color: AppColors.warmSupport),
     FeelingShortcut(label: 'I need focus', route: '/focus', color: AppColors.novaPurple),
     FeelingShortcut(label: 'I feel lonely', route: '/community', color: AppColors.emotionalWarning),
-    FeelingShortcut(label: 'I need help', route: '/crisis-support', color: AppColors.emotionalDangerMuted),
+    FeelingShortcut(label: 'I need help', route: '/crisis-hub', color: AppColors.emotionalDangerMuted),
   ];
 }

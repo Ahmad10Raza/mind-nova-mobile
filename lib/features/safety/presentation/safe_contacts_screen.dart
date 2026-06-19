@@ -7,6 +7,8 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/dashboard_theme.dart';
 import '../../../core/theme/tools_theme.dart';
+import '../../../core/design/colors/app_colors.dart';
+import '../../../core/design/typography/app_typography.dart';
 import '../providers/safety_provider.dart';
 import '../models/crisis_model.dart';
 
@@ -42,7 +44,7 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
     final contacts = state.contacts;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFE),
+      backgroundColor: AppColors.backgroundPrimary,
       body: FadeTransition(
         opacity: CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut),
         child: CustomScrollView(
@@ -52,13 +54,13 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
             SliverAppBar(
               expandedHeight: 140,
               pinned: true,
-              backgroundColor: const Color(0xFFFBFBFE),
+              backgroundColor: AppColors.backgroundPrimary,
               elevation: 0,
               leading: _backButton(context),
               actions: [
                 TextButton(
                   onPressed: () => context.go('/'),
-                  style: TextButton.styleFrom(foregroundColor: DashboardTheme.textSecondary),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
                   child: const Text('Quick Exit'),
                 ),
                 IconButton(
@@ -81,7 +83,7 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                   style: GoogleFonts.outfit(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: DashboardTheme.textPrimary,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
@@ -95,22 +97,22 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [
-                    const Color(0xFFFFF3E0),
-                    const Color(0xFFFFF3E0).withOpacity(0.3),
+                    ToolsTheme.crisisRed.withOpacity(0.1),
+                    ToolsTheme.crisisRed.withOpacity(0.05),
                   ]),
                   borderRadius: BorderRadius.circular(DashboardTheme.radiusL),
-                  border: Border.all(color: Colors.orange.withOpacity(0.1)),
+                  border: Border.all(color: ToolsTheme.crisisRed.withOpacity(0.2)),
                 ),
                 child: Row(
                   children: [
                     Container(
                       width: 44, height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.12),
+                        color: ToolsTheme.crisisRed.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.people_alt_rounded,
-                          color: Colors.deepOrange, size: 22),
+                      child: Icon(Icons.people_alt_rounded,
+                          color: ToolsTheme.crisisRed.withOpacity(0.8), size: 22),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -120,12 +122,12 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                           Text('People you trust',
                             style: GoogleFonts.outfit(
                               fontSize: 15, fontWeight: FontWeight.w700,
-                              color: DashboardTheme.textPrimary,
+                              color: AppColors.textPrimary,
                             )),
                           const SizedBox(height: 2),
                           Text('Quick-call or message during difficult moments.',
                             style: GoogleFonts.inter(
-                              fontSize: 12, color: DashboardTheme.textTertiary,
+                              fontSize: 12, color: AppColors.textSecondary,
                             )),
                         ],
                       ),
@@ -176,9 +178,9 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: AppColors.backgroundSecondary,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                    border: Border.all(color: AppColors.textPrimary.withOpacity(0.1), style: BorderStyle.solid),
                   ),
                   child: Row(
                     children: [
@@ -189,10 +191,10 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Professional Support',
-                              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.grey.shade700)),
+                              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                             const SizedBox(height: 2),
                             Text('Coming soon to MindNova',
-                              style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500)),
+                              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                           ],
                         ),
                       ),
@@ -221,12 +223,11 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
       icon: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.textPrimary.withOpacity(0.08),
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
         ),
         child: const Icon(Icons.arrow_back_ios_new_rounded,
-            size: 18, color: DashboardTheme.textPrimary),
+            size: 18, color: AppColors.textSecondary),
       ),
       onPressed: () => Navigator.pop(context),
     );
@@ -248,14 +249,14 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
           const SizedBox(height: 20),
           Text('No contacts yet',
             style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w700,
-                color: DashboardTheme.textPrimary)),
+                color: AppColors.textPrimary)),
           const SizedBox(height: 8),
           SizedBox(
             width: 260,
             child: Text(
               'Add people you trust. They\'ll be a quick tap away when you need support.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 14, color: DashboardTheme.textTertiary, height: 1.5),
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -303,12 +304,12 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
       builder: (d) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Remove ${c.name}?',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
         content: Text('This contact will be removed from your safe list.',
-            style: GoogleFonts.inter(color: DashboardTheme.textSecondary)),
+            style: GoogleFonts.inter(color: AppColors.textSecondary)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(d),
-            child: Text('Cancel', style: GoogleFonts.inter(color: DashboardTheme.textTertiary))),
+            child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textSecondary))),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(d);
@@ -359,7 +360,7 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                     child: Container(
                       width: 40, height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: AppColors.textPrimary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -367,7 +368,7 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                   const SizedBox(height: 20),
                   Text(
                     existing == null ? 'Add Contact' : 'Edit Contact',
-                    style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800),
+                    style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 16),
                   _sheetField(nameCtrl, 'Name', Icons.person_rounded),
@@ -378,6 +379,8 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                   // Relation dropdown
                   DropdownButtonFormField<String>(
                     value: relation,
+                    dropdownColor: AppColors.backgroundTertiary,
+                    style: GoogleFonts.inter(color: AppColors.textPrimary),
                     decoration: _sheetInputDecor('Relationship', Icons.favorite_rounded),
                     items: ContactRelation.values.map((r) =>
                       DropdownMenuItem(value: r.label, child: Text(r.label))).toList(),
@@ -389,9 +392,9 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
                     value: allowSms,
                     onChanged: (v) => setSheetState(() => allowSms = v),
                     title: Text('Allow Quick SMS',
-                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     subtitle: Text('Send pre-written message in SOS mode',
-                        style: GoogleFonts.inter(fontSize: 12, color: DashboardTheme.textTertiary)),
+                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                     activeColor: ToolsTheme.crisisRed,
                     contentPadding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -462,7 +465,7 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
     return TextField(
       controller: ctrl,
       keyboardType: keyboardType,
-      style: GoogleFonts.inter(fontSize: 15),
+      style: GoogleFonts.inter(fontSize: 15, color: AppColors.textPrimary),
       decoration: _sheetInputDecor(label, icon),
     );
   }
@@ -470,10 +473,10 @@ class _SafeContactsScreenState extends ConsumerState<SafeContactsScreen>
   InputDecoration _sheetInputDecor(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.inter(color: DashboardTheme.textTertiary),
-      prefixIcon: Icon(icon, size: 20, color: DashboardTheme.textTertiary),
+      labelStyle: GoogleFonts.inter(color: AppColors.textSecondary),
+      prefixIcon: Icon(icon, size: 20, color: AppColors.textSecondary),
       filled: true,
-      fillColor: Colors.grey.shade50,
+      fillColor: AppColors.backgroundTertiary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
@@ -509,20 +512,13 @@ class _ContactCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: contact.favorite
               ? ToolsTheme.crisisRed.withOpacity(0.2)
-              : Colors.grey.shade100,
+              : AppColors.textPrimary.withOpacity(0.1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -537,7 +533,7 @@ class _ContactCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: contact.favorite
                           ? [ToolsTheme.crisisRed, const Color(0xFFFF8A80)]
-                          : [Colors.grey.shade200, Colors.grey.shade300],
+                          : [AppColors.textPrimary.withOpacity(0.1), AppColors.textPrimary.withOpacity(0.05)],
                     ),
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -546,7 +542,7 @@ class _ContactCard extends StatelessWidget {
                       contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
                       style: GoogleFonts.outfit(
                         fontSize: 20, fontWeight: FontWeight.w800,
-                        color: contact.favorite ? Colors.white : DashboardTheme.textSecondary,
+                        color: contact.favorite ? Colors.white : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -563,7 +559,7 @@ class _ContactCard extends StatelessWidget {
                             child: Text(contact.name,
                               style: GoogleFonts.outfit(
                                 fontSize: 16, fontWeight: FontWeight.w700,
-                                color: DashboardTheme.textPrimary,
+                                color: AppColors.textPrimary,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -577,7 +573,7 @@ class _ContactCard extends StatelessWidget {
                       if (contact.relation != null)
                         Text(contact.relation!,
                           style: GoogleFonts.inter(
-                            fontSize: 12, color: DashboardTheme.textTertiary,
+                            fontSize: 12, color: AppColors.textSecondary,
                           )),
                     ],
                   ),
@@ -595,14 +591,14 @@ class _ContactCard extends StatelessWidget {
                 _chipButton(
                   contact.favorite ? Icons.star_rounded : Icons.star_outline_rounded,
                   contact.favorite ? 'Favorited' : 'Favorite',
-                  contact.favorite ? ToolsTheme.crisisRed : DashboardTheme.textTertiary,
+                  contact.favorite ? ToolsTheme.crisisRed : AppColors.textSecondary,
                   onToggleFavorite,
                 ),
                 const Spacer(),
-                _chipButton(Icons.edit_rounded, 'Edit', DashboardTheme.textTertiary, onEdit),
+                _chipButton(Icons.edit_rounded, 'Edit', AppColors.textSecondary, onEdit),
                 const SizedBox(width: 8),
                 _chipButton(Icons.delete_outline_rounded, 'Remove',
-                    DashboardTheme.textTertiary, onDelete),
+                    AppColors.textSecondary, onDelete),
               ],
             ),
           ],

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,7 @@ import '../../../../core/design/colors/app_colors.dart';
 import '../../../../core/design/spacing/app_spacing.dart';
 import '../../../../core/design/radius/app_radius.dart';
 import '../../../community/data/community_socket_service.dart';
+import '../../providers/community_providers.dart';
 
 class LiveRoomScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -29,6 +31,13 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
   List<Map<String, dynamic>> _messages = [];
   bool _isConnected = false;
   String _userId = '';
+  
+  StreamSubscription? _msgSub;
+  StreamSubscription? _joinSub;
+  StreamSubscription? _leaveSub;
+  Timer? _timer;
+  bool _hasShownWarning = false;
+  DateTime? _endsAt;
 
   @override
   void initState() {
@@ -44,20 +53,105 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
     final socketService = ref.read(communitySocketProvider);
     socketService.connect(widget.roomId, token, alias: _userId);
     
+    _msgSub = socketService.messageStream.listen((data) {
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'content': data['text'],
+            'isUser': data['userId'] == _userId,
+            'alias': data['alias'],
+            'timestamp': DateTime.now(),
+          });
+        });
+        _scrollToBottom();
+      }
+    });
+
+    _joinSub = socketService.participantJoinedStream.listen((data) {
+       if (mounted) {
+         setState(() {
+            _messages.add({
+              'isSystem': true,
+              'content': '${data['alias']} joined the circle',
+            });
+         });
+         _scrollToBottom();
+       }
+    });
+
+    _leaveSub = socketService.participantLeftStream.listen((data) {
+       if (mounted) {
+         setState(() {
+            _messages.add({
+              'isSystem': true,
+              'content': '${data['alias']} left the circle',
+            });
+         });
+         _scrollToBottom();
+       }
+    });
+
     setState(() {
       _isConnected = true;
     });
-    
-    // Note: To fully receive messages, we'd ideally listen to a stream or callback from the socket service.
-    // For now, we simulate basic UI connection.
+
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_endsAt == null) return;
+      
+      final now = DateTime.now();
+      final difference = _endsAt!.difference(now);
+      
+      // 5 minute warning
+      if (difference.inMinutes == 5 && !_hasShownWarning && difference.inSeconds < 300 && difference.inSeconds > 290) {
+        _hasShownWarning = true;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Warning: The circle will end in 5 minutes.'),
+              backgroundColor: AppColors.warmSupport,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+
+      // Finish call
+      if (difference.isNegative) {
+        timer.cancel();
+        _endCall();
+      }
+    });
+  }
+
+  void _endCall() {
+    _jitsiMeet.hangUp();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('The circle has ended. Thank you for being present.'),
+          backgroundColor: AppColors.calmTeal,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      if (GoRouter.of(context).canPop()) {
+        context.pop();
+      }
+    }
   }
 
   @override
   void dispose() {
+    _msgSub?.cancel();
+    _joinSub?.cancel();
+    _leaveSub?.cancel();
+    _timer?.cancel();
     if (_isConnected) {
       final socketService = ref.read(communitySocketProvider);
       socketService.leaveRoom(widget.roomId);
-      // Removed socketService.dispose() because it is managed by the Provider
     }
     _controller.dispose();
     _scrollController.dispose();
@@ -102,16 +196,8 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
     _controller.clear();
     
     final socketService = ref.read(communitySocketProvider);
-    // Emit message to room (assuming backend supports this structure)
-    // socketService.socket?.emit('send_message', {'roomId': widget.roomId, 'userId': _userId, 'content': text});
-    
-    setState(() {
-      _messages.add({
-        'content': text,
-        'isUser': true,
-        'timestamp': DateTime.now(),
-      });
-    });
+    socketService.sendMessage(widget.roomId, text);
+    // Note: the message will be added to the UI via the _msgSub listener
 
     _scrollToBottom();
   }
@@ -130,6 +216,15 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch room details to get endsAt time
+    ref.listen(liveRoomDetailProvider(widget.roomId), (prev, next) {
+      if (next is AsyncData) {
+        if (mounted && next.value != null && next.value!.endsAt != null) {
+          _endsAt = next.value!.endsAt;
+        }
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
       appBar: AppBar(
@@ -230,24 +325,65 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isUser = msg['isUser'] as bool;
+                final isSystem = msg['isSystem'] == true;
+                
+                if (isSystem) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          msg['content'] as String,
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                final isUser = msg['isUser'] == true;
+                final alias = msg['alias'] as String? ?? 'Unknown';
                 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Align(
                     alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isUser ? AppColors.novaPurple.withOpacity(0.2) : Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        msg['content'] as String,
-                        style: GoogleFonts.manrope(
-                          color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        if (!isUser) ...[
+                          Text(
+                            alias,
+                            style: GoogleFonts.manrope(
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isUser ? AppColors.novaPurple.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            msg['content'] as String,
+                            style: GoogleFonts.manrope(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 );

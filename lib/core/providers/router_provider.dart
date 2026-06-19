@@ -39,6 +39,7 @@ import '../../features/notifications/presentation/notification_settings_screen.d
 import '../../features/safety/providers/safety_provider.dart';
 import '../../features/safety/presentation/emergency_screen.dart';
 import '../../features/safety/presentation/crisis_plan_screen.dart';
+import '../../features/safety/presentation/crisis_hub_screen.dart';
 import '../../features/safety/presentation/safe_contacts_screen.dart';
 import '../../features/safety/presentation/sos_mode_screen.dart';
 import '../../features/safety/presentation/recovery_success_screen.dart';
@@ -488,6 +489,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // ─── Crisis Support ─────────────────────────────────────────
 
+          GoRoute(
+            path: '/crisis-hub',
+            builder: (context, state) => const CrisisHubScreen(),
+          ),
           GoRoute(
             path: '/safe-contacts',
             builder: (context, state) => const SafeContactsScreen(),

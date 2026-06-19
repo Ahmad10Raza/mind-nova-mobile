@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/dashboard_theme.dart';
 import '../../../core/theme/tools_theme.dart';
+import '../../../core/design/colors/app_colors.dart';
+import '../../../core/design/typography/app_typography.dart';
 import '../providers/safety_provider.dart';
 import '../models/crisis_model.dart';
 
@@ -146,7 +148,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFE),
+      backgroundColor: AppColors.backgroundPrimary,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: CustomScrollView(
@@ -156,23 +158,17 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
             SliverAppBar(
               expandedHeight: 140,
               pinned: true,
-              backgroundColor: const Color(0xFFFBFBFE),
+              backgroundColor: AppColors.backgroundPrimary,
               elevation: 0,
               leading: IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.textPrimary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                      ),
-                    ],
                   ),
                   child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 18, color: DashboardTheme.textPrimary),
+                      size: 18, color: AppColors.textSecondary),
                 ),
                 onPressed: () {
                   if (_hasUnsavedChanges) _save();
@@ -194,7 +190,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                   style: GoogleFonts.outfit(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: DashboardTheme.textPrimary,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
@@ -209,12 +205,12 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      ToolsTheme.crisisBgTint,
-                      ToolsTheme.crisisBgTint.withOpacity(0.3),
+                      ToolsTheme.crisisRed.withOpacity(0.1),
+                      ToolsTheme.crisisRed.withOpacity(0.05),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(DashboardTheme.radiusL),
-                  border: Border.all(color: ToolsTheme.crisisRed.withOpacity(0.1)),
+                  border: Border.all(color: ToolsTheme.crisisRed.withOpacity(0.2)),
                 ),
                 child: Row(
                   children: [
@@ -238,7 +234,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                             style: GoogleFonts.outfit(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: DashboardTheme.textPrimary,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -246,7 +242,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                             'Saved securely on your device. Only you can see this.',
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: DashboardTheme.textTertiary,
+                              color: AppColors.textSecondary,
                               height: 1.4,
                             ),
                           ),
@@ -336,7 +332,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: DashboardTheme.textPrimary,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -348,25 +344,18 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.backgroundSecondary,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(color: AppColors.textPrimary.withOpacity(0.1)),
                   ),
                   child: TextField(
                     controller: _notesController,
                     maxLines: 4,
                     onChanged: (_) => _scheduleAutoSave(),
-                    style: GoogleFonts.inter(fontSize: 14, color: DashboardTheme.textPrimary),
+                    style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Anything else you want to remember...',
-                      hintStyle: GoogleFonts.inter(color: DashboardTheme.textTertiary),
+                      hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.all(20),
                     ),
@@ -424,14 +413,14 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: DashboardTheme.textPrimary,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: DashboardTheme.textTertiary,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -484,7 +473,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: DashboardTheme.textTertiary,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -502,21 +491,21 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
+                        color: AppColors.backgroundSecondary,
                         borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: AppColors.textPrimary.withOpacity(0.1)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.add_rounded, size: 14, color: DashboardTheme.textTertiary),
+                          Icon(Icons.add_rounded, size: 14, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             preset,
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: DashboardTheme.textSecondary,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -556,7 +545,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Divider(color: Colors.grey.shade100, height: 1),
+            Divider(color: AppColors.textPrimary.withOpacity(0.05), height: 1),
           ],
         ),
       ),
@@ -573,20 +562,21 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.backgroundSecondary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           'Add to $sectionTitle',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 18),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 18, color: AppColors.textPrimary),
         ),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.inter(fontSize: 15),
+          style: GoogleFonts.inter(fontSize: 15, color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Type something...',
-            hintStyle: GoogleFonts.inter(color: DashboardTheme.textTertiary),
+            hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: AppColors.backgroundTertiary,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
@@ -604,7 +594,7 @@ class _CrisisPlanScreenState extends ConsumerState<CrisisPlanScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.inter(color: DashboardTheme.textTertiary)),
+            child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {

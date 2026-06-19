@@ -87,6 +87,11 @@ final upcomingCirclesProvider = FutureProvider.autoDispose<List<CommunityRoom>>(
   return service.getUpcomingRooms();
 });
 
+final liveRoomDetailProvider = FutureProvider.family.autoDispose<CommunityRoom, String>((ref, roomId) async {
+  final service = ref.watch(communityServiceProvider);
+  return service.getRoom(roomId);
+});
+
 // A simple notifier for toggling reactions locally immediately
 class PostReactionNotifier extends Notifier<AsyncValue<void>> {
   @override

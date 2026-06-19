@@ -161,6 +161,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppSurfaces.secondary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(

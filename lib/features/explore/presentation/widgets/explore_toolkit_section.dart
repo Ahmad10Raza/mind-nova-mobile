@@ -87,7 +87,7 @@ class ExploreToolkitSection extends StatelessWidget {
           items: [
             _ToolkitItem(title: 'Therapist Sessions', imagePath: 'assets/images/explore/TherapySupportSpirit.png', colSpan: 2, route: '/therapist'),
             _ToolkitItem(title: 'Clinical Assessments', imagePath: 'assets/images/explore/Psychology_Counseling.jpg', colSpan: 1, route: '/assessment/depression'), // Redirecting to depression temporarily, could be a list screen
-            _ToolkitItem(title: 'Crisis Support', imagePath: 'assets/images/explore/CrisisProtectionSpirit.png', colSpan: 1, route: '/crisis'),
+            _ToolkitItem(title: 'Crisis Support', imagePath: 'assets/images/explore/CrisisProtectionSpirit.png', colSpan: 1, route: '/crisis-hub'),
           ],
         ),
       ],

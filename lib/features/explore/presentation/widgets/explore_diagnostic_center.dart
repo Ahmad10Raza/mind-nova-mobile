@@ -54,6 +54,8 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
     final anxiety = _getAssessmentState('gad');
     final stress = _getAssessmentState('pss');
     final ptsd = _getAssessmentState('ptsd');
+    final panic = _getAssessmentState('panic');
+    final burnout = _getAssessmentState('burnout');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,6 +120,26 @@ class ExploreDiagnosticCenter extends ConsumerWidget {
                 buttonColor: ptsd['isCompleted'] ? AppColors.textMuted : null,
                 imageAsset: 'assets/images/explore/ptsd.png',
                 onTap: _getOnTap(ptsd, 'ptsd'),
+              ),
+              _buildAssessmentCard(
+                title: 'Panic Test',
+                status: panic['status'],
+                progress: panic['progress'],
+                buttonText: panic['buttonText'],
+                color: const Color(0xFFEF5350),
+                buttonColor: panic['isCompleted'] ? AppColors.textMuted : null,
+                imageAsset: 'assets/images/explore/panic.png',
+                onTap: _getOnTap(panic, 'panic'),
+              ),
+              _buildAssessmentCard(
+                title: 'Burnout Test',
+                status: burnout['status'],
+                progress: burnout['progress'],
+                buttonText: burnout['buttonText'],
+                color: const Color(0xFFFF9800),
+                buttonColor: burnout['isCompleted'] ? AppColors.textMuted : null,
+                imageAsset: 'assets/images/explore/burnout.png',
+                onTap: _getOnTap(burnout, 'burnout'),
               ),
             ],
           ),
