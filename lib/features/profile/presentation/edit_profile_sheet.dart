@@ -190,8 +190,29 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                                     border: Border.all(color: const Color(0xFF5E4B8B).withOpacity(0.1), width: 2),
                                   ),
                                   child: ClipOval(
-                                    child: _pickedImageBytes != null
-                                      ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
+                                    child: _pickedImage != null
+                                      ? (kIsWeb 
+                                          ? Image.network(
+                                              _pickedImage!.path, 
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Center(
+                                                child: Text(
+                                                  _firstNameController.text.isNotEmpty ? _firstNameController.text[0].toUpperCase() : 'U',
+                                                  style: GoogleFonts.outfit(fontSize: 40, fontWeight: FontWeight.w700, color: const Color(0xFF5E4B8B)),
+                                                ),
+                                              ),
+                                            ) 
+                                          : Image.file(
+                                              File(_pickedImage!.path), 
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Center(
+                                                child: Text(
+                                                  _firstNameController.text.isNotEmpty ? _firstNameController.text[0].toUpperCase() : 'U',
+                                                  style: GoogleFonts.outfit(fontSize: 40, fontWeight: FontWeight.w700, color: const Color(0xFF5E4B8B)),
+                                                ),
+                                              ),
+                                            )
+                                        )
                                       : ref.watch(authProvider).avatarUrl != null && ref.watch(authProvider).avatarUrl!.isNotEmpty
                                         ? Image.network(
                                             ref.watch(authProvider).avatarUrl!.startsWith('http') 
