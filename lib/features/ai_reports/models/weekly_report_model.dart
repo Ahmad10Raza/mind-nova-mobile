@@ -23,11 +23,25 @@ class WeeklyReport {
   final double? depressionTrend;
 
   // ── Engagement Metrics ──
+  final int totalAppSessions;
+  final int totalTimeSpentMinutes;
   final int gratitudeCount;
   final int journalCount;
   final int meditationMinutes;
   final int groundingSessions;
   final int audioMinutes;
+  final int communityPostsCreated;
+  final int communityComments;
+  final List<String> topToolsUsed;
+  final String? mostActiveDay;
+
+  // ── Diary & Log Highlights ──
+  final List<Map<String, String>> diaryEntriesDetailed;
+
+  // ── Clinical & Care Data ──
+  final List<Map<String, dynamic>> assessmentHistory;
+  final Map<String, dynamic> therapistData;
+  final List<Map<String, dynamic>> moodChartData;
 
   // ── Composite Scores ──
   final double? emotionalVolatility;
@@ -80,11 +94,21 @@ class WeeklyReport {
     this.burnoutRisk,
     this.anxietyTrend,
     this.depressionTrend,
+    this.totalAppSessions = 0,
+    this.totalTimeSpentMinutes = 0,
     this.gratitudeCount = 0,
     this.journalCount = 0,
     this.meditationMinutes = 0,
     this.groundingSessions = 0,
     this.audioMinutes = 0,
+    this.communityPostsCreated = 0,
+    this.communityComments = 0,
+    this.topToolsUsed = const [],
+    this.mostActiveDay,
+    this.diaryEntriesDetailed = const [],
+    this.assessmentHistory = const [],
+    this.therapistData = const {},
+    this.moodChartData = const [],
     this.emotionalVolatility,
     this.recoveryScore,
     this.wellnessScore,
@@ -129,11 +153,29 @@ class WeeklyReport {
       burnoutRisk: json['burnoutRisk'] != null ? (json['burnoutRisk'] as num).toDouble() : null,
       anxietyTrend: json['anxietyTrend'] != null ? (json['anxietyTrend'] as num).toDouble() : null,
       depressionTrend: json['depressionTrend'] != null ? (json['depressionTrend'] as num).toDouble() : null,
+      totalAppSessions: json['totalAppSessions'] as int? ?? 0,
+      totalTimeSpentMinutes: json['totalTimeSpentMinutes'] as int? ?? 0,
       gratitudeCount: json['gratitudeCount'] as int? ?? 0,
       journalCount: json['journalCount'] as int? ?? 0,
       meditationMinutes: json['meditationMinutes'] as int? ?? 0,
       groundingSessions: json['groundingSessions'] as int? ?? 0,
       audioMinutes: json['audioMinutes'] as int? ?? 0,
+      communityPostsCreated: json['communityPostsCreated'] as int? ?? 0,
+      communityComments: json['communityComments'] as int? ?? 0,
+      topToolsUsed: json['topToolsUsed'] != null ? List<String>.from(json['topToolsUsed'] as List) : [],
+      mostActiveDay: json['mostActiveDay'] as String?,
+      diaryEntriesDetailed: json['diaryEntriesDetailed'] != null 
+          ? List<Map<String, String>>.from((json['diaryEntriesDetailed'] as List).map((x) => Map<String, String>.from(x)))
+          : [],
+      assessmentHistory: json['assessmentHistory'] != null 
+          ? List<Map<String, dynamic>>.from(json['assessmentHistory'] as List)
+          : [],
+      therapistData: json['therapistData'] != null 
+          ? Map<String, dynamic>.from(json['therapistData'] as Map)
+          : {},
+      moodChartData: json['moodChartData'] != null 
+          ? List<Map<String, dynamic>>.from(json['moodChartData'] as List)
+          : [],
       emotionalVolatility: json['emotionalVolatility'] != null ? (json['emotionalVolatility'] as num).toDouble() : null,
       recoveryScore: json['recoveryScore'] != null ? (json['recoveryScore'] as num).toDouble() : null,
       wellnessScore: json['wellnessScore'] != null ? (json['wellnessScore'] as num).toDouble() : null,

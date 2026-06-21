@@ -87,7 +87,7 @@ class _AudioDashboardScreenState extends ConsumerState<AudioDashboardScreen>
   }
 
   Future<void> _pickLocalFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['mp3', 'wav', 'flac', 'm4a', 'aac'],
       withData: kIsWeb, // Required for Web

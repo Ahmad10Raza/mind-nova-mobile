@@ -24,6 +24,7 @@ void main() async {
   }
 
   await LocalNotificationService.initialize();
+  await LocalNotificationService.scheduleWeeklyReportNotification();
   
   try {
     if (kIsWeb || (!Platform.isLinux && !Platform.isWindows)) {
