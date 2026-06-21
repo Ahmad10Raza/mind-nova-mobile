@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../therapist/providers/therapist_provider.dart';
 import '../../therapist/models/therapist_model.dart';
+import 'user_messages_screen.dart';
 
 // Colors & Constants
 const _backgroundDeep = Color(0xFF0F131F);
@@ -20,6 +21,7 @@ class UserCarePlanScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(userSessionsProvider);
+    final messagesAsync = ref.watch(userMessagesProvider);
 
     return Scaffold(
       backgroundColor: _backgroundDeep,
@@ -50,12 +52,23 @@ class UserCarePlanScreen extends ConsumerWidget {
                           _buildHeader(context, activeSession),
                           const SizedBox(height: 32),
                           if (activeSession != null) ...[
-                            _buildNovaFollowUpCard(activeSession.therapistName),
+                            _buildNovaFollowUpCard(context, activeSession.therapistName),
                             const SizedBox(height: 32),
                           ],
+                          _buildSectionTitle('Recent Messages'),
+                          const SizedBox(height: 16),
+                          messagesAsync.when(
+                            data: (threads) {
+                              if (threads.isEmpty) return const Text('No recent messages.', style: TextStyle(color: Colors.white54));
+                              return _buildQuickMessageCard(context, threads.first);
+                            },
+                            loading: () => const Center(child: CircularProgressIndicator(color: _primaryColor)),
+                            error: (_,__) => const SizedBox(),
+                          ),
+                          const SizedBox(height: 32),
                           _buildSectionTitle('Assigned Tasks'),
                           const SizedBox(height: 16),
-                          _buildAssignedTasks(activeSession != null),
+                          _buildAssignedTasks(context, activeSession != null),
                           const SizedBox(height: 32),
                           _buildSectionTitle('Upcoming Sessions'),
                           const SizedBox(height: 16),
@@ -121,7 +134,7 @@ class UserCarePlanScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNovaFollowUpCard(String therapistName) {
+  Widget _buildNovaFollowUpCard(BuildContext context, String therapistName) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -146,7 +159,7 @@ class UserCarePlanScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => context.push('/sleep/breathing'),
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,
               foregroundColor: const Color(0xFF32285E),
@@ -163,54 +176,80 @@ class UserCarePlanScreen extends ConsumerWidget {
     return Text(title, style: GoogleFonts.manrope(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white));
   }
 
-  Widget _buildAssignedTasks(bool hasSession) {
+  Widget _buildAssignedTasks(BuildContext context, bool hasSession) {
     if (!hasSession) {
       return Text('No tasks assigned yet.', style: GoogleFonts.inter(color: Colors.white54));
     }
     return Column(
       children: [
-        _buildTaskTile('Evening Wind-Down Breathing', 'Complete 3 times this week', Icons.air, 1, 3),
+        _buildTaskTile(
+          title: 'Evening Wind-Down Breathing',
+          subtitle: 'Complete 3 times this week',
+          icon: Icons.air,
+          completed: 1,
+          total: 3,
+          onTap: () => context.push('/sleep/breathing'),
+        ),
         const SizedBox(height: 12),
-        _buildTaskTile('Journal: Anxiety Triggers', 'Write one entry about work stress', Icons.book, 0, 1),
+        _buildTaskTile(
+          title: 'Journal: Anxiety Triggers',
+          subtitle: 'Write one entry about work stress',
+          icon: Icons.book,
+          completed: 0,
+          total: 1,
+          onTap: () => context.push('/journal/editor'),
+        ),
       ],
     );
   }
 
-  Widget _buildTaskTile(String title, String subtitle, IconData icon, int completed, int total) {
+  Widget _buildTaskTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required int completed,
+    required int total,
+    required VoidCallback onTap,
+  }) {
     final progress = completed / total;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B1F2C).withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _glassBorder),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: _secondaryColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: _secondaryColor),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-                Text(subtitle, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFC9C4D0))),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: const Color(0xFF353946),
-                  color: _secondaryColor,
-                  borderRadius: BorderRadius.circular(4),
-                  minHeight: 6,
-                ),
-              ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1B1F2C).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _glassBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: _secondaryColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon, color: _secondaryColor),
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                  Text(subtitle, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFC9C4D0))),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: const Color(0xFF353946),
+                    color: _secondaryColor,
+                    borderRadius: BorderRadius.circular(4),
+                    minHeight: 6,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -290,5 +329,59 @@ class UserCarePlanScreen extends ConsumerWidget {
     );
   }
 
-
+  Widget _buildQuickMessageCard(BuildContext context, MessageThread thread) {
+    final therapist = thread.therapist;
+    final name = therapist?.name ?? 'Therapist';
+    final imageUrl = therapist?.imageUrl;
+    final lastMessage = thread.messages.isNotEmpty ? thread.messages.first.content : 'No messages';
+    
+    return GestureDetector(
+      onTap: () {
+        if (therapist != null) {
+          context.push('/therapist/profile/chat', extra: therapist);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _primaryColor.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: _secondaryColor.withValues(alpha: 0.2),
+              backgroundImage: imageUrl != null && imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+              child: imageUrl == null || imageUrl.isEmpty
+                  ? Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : '?',
+                      style: const TextStyle(color: _secondaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                  const SizedBox(height: 4),
+                  Text(
+                    lastMessage,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 14, color: Colors.white.withValues(alpha: 0.8)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
 }

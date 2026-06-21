@@ -103,6 +103,8 @@ import '../../features/therapist_v2/presentation/therapist_patient_insight_scree
 import '../../features/therapist_v2/presentation/therapist_notes_screen.dart';
 import '../../features/therapist_v2/presentation/therapist_live_session_screen.dart';
 import '../../features/therapist_v2/presentation/user_care_plan_screen.dart';
+import '../../features/therapist_v2/presentation/user_messages_screen.dart';
+import '../../features/therapist_v2/presentation/therapist_category_screen.dart';
 import '../../features/therapist/models/therapist_model.dart';
 import '../../features/habits/presentation/screens/habit_history_screen.dart';
 
@@ -534,6 +536,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TherapistHomeScreenV2(),
         routes: [
           GoRoute(
+            path: 'messages',
+            builder: (context, state) => const UserMessagesScreen(),
+          ),
+          GoRoute(
             path: 'match',
             builder: (context, state) => const TherapistMatchScreen(),
           ),
@@ -573,6 +579,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 },
               ),
             ],
+          ),
+          GoRoute(
+            path: 'category',
+            builder: (context, state) {
+              final category = state.extra as String? ?? 'Anxiety';
+              return TherapistCategoryScreen(category: category);
+            },
           ),
           GoRoute(
             path: 'portal',

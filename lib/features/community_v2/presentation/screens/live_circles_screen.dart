@@ -275,7 +275,7 @@ class _LiveCirclesScreenState extends ConsumerState<LiveCirclesScreen> with Sing
                 Row(children: [
                   Icon(Icons.groups_rounded, size: 18, color: Colors.white.withValues(alpha: 0.7)),
                   const SizedBox(width: 6),
-                  Text('${room.participantCount > 0 ? room.participantCount : 48} souls present', style: GoogleFonts.manrope(fontSize: 14, color: Colors.white.withValues(alpha: 0.7))),
+                  Text('${room.participantCount} souls present', style: GoogleFonts.manrope(fontSize: 14, color: Colors.white.withValues(alpha: 0.7))),
                 ]),
               ]),
             ),
@@ -300,8 +300,8 @@ class _LiveCirclesScreenState extends ConsumerState<LiveCirclesScreen> with Sing
               decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.novaPurpleLight.withValues(alpha: 0.3))),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: room.hostType == 'THERAPIST' 
-                    ? Image.network(_hostImageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(color: AppColors.novaPurple))
+                child: room.hostImageUrl != null
+                    ? Image.network(room.hostImageUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(color: AppColors.novaPurple))
                     : Container(color: AppColors.novaPurple, child: const Icon(Icons.person, color: Colors.white)),
               ),
             ),
@@ -418,7 +418,7 @@ class _LiveCirclesScreenState extends ConsumerState<LiveCirclesScreen> with Sing
                     Row(children: [
                       Text('Host: ${room.hostName}', style: GoogleFonts.manrope(fontSize: 13, color: Colors.white.withValues(alpha: 0.7))),
                       Container(width: 4, height: 4, margin: const EdgeInsets.symmetric(horizontal: 8), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle)),
-                      Text('${room.participantCount > 0 ? room.participantCount : 12} listening', style: GoogleFonts.manrope(fontSize: 13, color: Colors.white.withValues(alpha: 0.7))),
+                      Text('${room.participantCount} listening', style: GoogleFonts.manrope(fontSize: 13, color: Colors.white.withValues(alpha: 0.7))),
                     ]),
                   ])),
                   Container(

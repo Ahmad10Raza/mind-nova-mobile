@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/design/colors/app_colors.dart';
 import '../../therapist/providers/therapist_provider.dart';
 import '../../therapist/models/therapist_model.dart';
+import '../../auth/providers/auth_provider.dart';
 
 // HTML Design Constants
 const _backgroundDeep = Color(0xFF0F131F);
@@ -36,6 +37,7 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
   @override
   Widget build(BuildContext context) {
     final featuredAsync = ref.watch(featuredTherapistsProvider);
+    final avatarUrl = ref.watch(authProvider).avatarUrl;
 
     return Scaffold(
       backgroundColor: _backgroundDeep,
@@ -52,7 +54,7 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildAppBar(),
+              _buildAppBar(avatarUrl),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                 sliver: SliverList(
@@ -73,9 +75,8 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (_,__) => const SizedBox.shrink(),
                     ),
-                    
                     const SizedBox(height: 64),
-                    _buildCategoriesGrid(),
+                    _buildCategoriesGrid(context),
                     const SizedBox(height: 64),
                     
                     // Other Specialists
@@ -95,18 +96,12 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
               ),
             ],
           ),
-          
-          // Crisis FAB
-          Positioned(
-            bottom: 32, right: 32,
-            child: _buildCrisisFAB(),
-          ),
         ],
       ),
     );
   }
 
-  SliverAppBar _buildAppBar() {
+  SliverAppBar _buildAppBar(String? avatarUrl) {
     return SliverAppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -114,6 +109,7 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
       title: Text('MindNova', style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w600, color: _primaryColor)),
       flexibleSpace: ClipRect(child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), child: Container(decoration: BoxDecoration(color: _backgroundDeep.withValues(alpha: 0.8), border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))))))),
       actions: [
+        IconButton(icon: const Icon(Icons.mail_outline, color: _primaryColor), onPressed: () => context.push('/therapist/messages')),
         IconButton(icon: const Icon(Icons.settings, color: _primaryColor), onPressed: () {}),
         Container(
           margin: const EdgeInsets.only(right: 24, left: 8),
@@ -121,7 +117,12 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
           decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: 0.2))),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network('https://lh3.googleusercontent.com/aida-public/AB6AXuCB5RcqW_mkRfM3rrncaJo8q-2WwclxBBHPN9wq7bbsZRoBtyMGOR9y4BuohLp0sIOQXNSCmyPJyhW_7Vi_6M9RD_xSkwPPMbPp5Exqi4cZw1_xYZxa6GGhmXBw1S3Dnxaq2xRHq-YMNFvZInR5BJYFUwQrV5NvvVUh5KnJVhrveQy77243jilKC0s0-GzTLD1Esm-vQAbTFl2T0ivnzj37FjiIxMRpy0P4BTavU3FeuiaIKEj1qHWsp6zPF6a5NMRbvF0LYn-kLPTm', fit: BoxFit.cover),
+            child: avatarUrl != null && avatarUrl.isNotEmpty
+                ? Image.network(avatarUrl, fit: BoxFit.cover)
+                : Container(
+                    color: _secondaryColor.withValues(alpha: 0.2),
+                    child: const Icon(Icons.person, color: _secondaryColor, size: 20),
+                  ),
           ),
         ),
       ],
@@ -355,7 +356,7 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
     );
   }
 
-  Widget _buildCategoriesGrid() {
+  Widget _buildCategoriesGrid(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -367,35 +368,40 @@ class _TherapistHomeScreenV2State extends ConsumerState<TherapistHomeScreenV2> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          children: _categoryImages.entries.map((e) => _categoryCard(e.key, e.value)).toList(),
+          children: _categoryImages.entries.map((e) => _categoryCard(context, e.key, e.value)).toList(),
         ),
       ],
     );
   }
 
-  Widget _categoryCard(String title, String imageUrl) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B1F2C).withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.network(imageUrl, width: double.infinity, height: double.infinity, fit: BoxFit.cover, opacity: const AlwaysStoppedAnimation(0.4)),
-          ),
-          Container(
-            decoration: BoxDecoration(
+  Widget _categoryCard(BuildContext context, String title, String imageUrl) {
+    return GestureDetector(
+      onTap: () {
+        context.push('/therapist/category', extra: title);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1B1F2C).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, _backgroundDeep.withValues(alpha: 0.8)]),
+              child: Image.network(imageUrl, width: double.infinity, height: double.infinity, fit: BoxFit.cover, opacity: const AlwaysStoppedAnimation(0.4)),
             ),
-          ),
-          Positioned(
-            bottom: 24, left: 24,
-            child: Text(title, style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w600, color: _primaryColor)),
-          ),
-        ],
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, _backgroundDeep.withValues(alpha: 0.8)]),
+              ),
+            ),
+            Positioned(
+              bottom: 24, left: 24,
+              child: Text(title, style: GoogleFonts.manrope(fontSize: 24, fontWeight: FontWeight.w600, color: _primaryColor)),
+            ),
+          ],
+        ),
       ),
     );
   }

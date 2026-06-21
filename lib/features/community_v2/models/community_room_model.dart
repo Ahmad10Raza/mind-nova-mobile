@@ -10,6 +10,7 @@ class CommunityRoom {
   final int maxParticipants;
   final bool isRecurring;
   final int participantCount;
+  final String? hostImageUrl;
 
   CommunityRoom({
     required this.id,
@@ -23,6 +24,7 @@ class CommunityRoom {
     this.maxParticipants = 50,
     this.isRecurring = false,
     this.participantCount = 0,
+    this.hostImageUrl,
   });
 
   /// Derive a display status from the isLive flag and startsAt time
@@ -45,6 +47,7 @@ class CommunityRoom {
       maxParticipants: json['maxParticipants'] ?? 50,
       isRecurring: json['isRecurring'] ?? false,
       participantCount: json['_count']?['participants'] ?? 0,
+      hostImageUrl: json['hostImageUrl'],
     );
   }
 }

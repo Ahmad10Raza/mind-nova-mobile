@@ -33,11 +33,26 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
   String _userId = '';
   
   StreamSubscription? _msgSub;
+  StreamSubscription? _historySub;
   StreamSubscription? _joinSub;
   StreamSubscription? _leaveSub;
   Timer? _timer;
   bool _hasShownWarning = false;
   DateTime? _endsAt;
+
+  Color _getColorForUser(String userId) {
+    final colors = [
+      AppColors.calmTeal,
+      AppColors.novaPurpleLight,
+      const Color(0xFFF2A65A), // Sunset Orange
+      const Color(0xFFE58F9E), // Soft Pink
+      const Color(0xFF7A9E9F), // Slate Blue
+      const Color(0xFF9B9B7A), // Sage
+    ];
+    // Hash the ID to get a stable color index
+    final hash = userId.hashCode.abs();
+    return colors[hash % colors.length];
+  }
 
   @override
   void initState() {
@@ -48,11 +63,27 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
   Future<void> _initRoom() async {
     final prefs = await SharedPreferences.getInstance();
     _userId = prefs.getString('userId') ?? 'anonymous';
-    final token = prefs.getString('token') ?? '';
+    final token = prefs.getString('access_token') ?? '';
+    final userName = prefs.getString('userName') ?? 'Community Member';
     
     final socketService = ref.read(communitySocketProvider);
-    socketService.connect(widget.roomId, token, alias: _userId);
+    socketService.connect(widget.roomId, token, alias: userName);
     
+    _historySub = socketService.chatHistoryStream.listen((history) {
+      if (mounted) {
+        setState(() {
+          _messages.addAll(history.map((data) => {
+            'content': data['text'],
+            'isUser': data['userId'] == _userId,
+            'alias': data['alias'],
+            'userId': data['userId'] ?? 'unknown',
+            'timestamp': DateTime.parse(data['timestamp'] ?? DateTime.now().toIso8601String()),
+          }));
+        });
+        _scrollToBottom();
+      }
+    });
+
     _msgSub = socketService.messageStream.listen((data) {
       if (mounted) {
         setState(() {
@@ -60,6 +91,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
             'content': data['text'],
             'isUser': data['userId'] == _userId,
             'alias': data['alias'],
+            'userId': data['userId'] ?? 'unknown',
             'timestamp': DateTime.now(),
           });
         });
@@ -146,6 +178,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
   @override
   void dispose() {
     _msgSub?.cancel();
+    _historySub?.cancel();
     _joinSub?.cancel();
     _leaveSub?.cancel();
     _timer?.cancel();
@@ -216,6 +249,8 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final roomAsync = ref.watch(liveRoomDetailProvider(widget.roomId));
+
     // Watch room details to get endsAt time
     ref.listen(liveRoomDetailProvider(widget.roomId), (prev, next) {
       if (next is AsyncData) {
@@ -224,6 +259,9 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
         }
       }
     });
+
+    final roomTitle = roomAsync.value?.title ?? 'Live Space';
+    final isTherapist = roomAsync.value?.hostType == 'THERAPIST';
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -235,7 +273,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Live Space',
+          roomTitle,
           style: GoogleFonts.sora(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -253,7 +291,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
             decoration: BoxDecoration(
               color: AppColors.backgroundSecondary,
               borderRadius: AppRadius.lg,
-              border: Border.all(color: AppColors.novaPurpleLight.withOpacity(0.3)),
+              border: Border.all(color: isTherapist ? AppColors.novaPurpleLight.withOpacity(0.3) : AppColors.calmTeal.withOpacity(0.3)),
             ),
             child: Column(
               children: [
@@ -263,21 +301,21 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
                     Container(
                       width: 12, height: 12,
                       decoration: BoxDecoration(
-                        color: AppColors.error,
+                        color: isTherapist ? AppColors.error : AppColors.calmTeal,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: AppColors.error.withOpacity(0.5), blurRadius: 8),
+                          BoxShadow(color: (isTherapist ? AppColors.error : AppColors.calmTeal).withOpacity(0.5), blurRadius: 8),
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'THERAPIST LED CALL IN PROGRESS',
+                      isTherapist ? 'THERAPIST LED CALL IN PROGRESS' : 'PEER LED CIRCLE IN PROGRESS',
                       style: GoogleFonts.manrope(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
-                        color: AppColors.error,
+                        color: isTherapist ? AppColors.error : AppColors.calmTeal,
                       ),
                     ),
                   ],
@@ -351,6 +389,8 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
 
                 final isUser = msg['isUser'] == true;
                 final alias = msg['alias'] as String? ?? 'Unknown';
+                final msgUserId = msg['userId'] as String? ?? 'unknown';
+                final userColor = _getColorForUser(msgUserId);
                 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -364,8 +404,8 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
                             alias,
                             style: GoogleFonts.manrope(
                               fontSize: 12,
-                              color: Colors.white.withOpacity(0.6),
-                              fontWeight: FontWeight.w600,
+                              color: userColor,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -373,7 +413,7 @@ class _LiveRoomScreenState extends ConsumerState<LiveRoomScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isUser ? AppColors.novaPurple.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                            color: isUser ? AppColors.novaPurple.withOpacity(0.2) : userColor.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(

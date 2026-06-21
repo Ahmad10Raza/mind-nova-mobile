@@ -84,7 +84,7 @@ class ChatManager extends ValueNotifier<ChatState> {
       }
 
       if (threadId != null) {
-        final msgRes = await dio.get('/therapists/messages/thread/$threadId');
+        final msgRes = await dio.get('/therapists/messages/thread/$threadId?viewerId=$currentUserId');
         if (msgRes.statusCode == 200 && msgRes.data != null) {
           initialMessages = List.from(msgRes.data['messages'] ?? []);
           initialMessages.sort((a, b) => DateTime.parse(a['createdAt']).compareTo(DateTime.parse(b['createdAt'])));

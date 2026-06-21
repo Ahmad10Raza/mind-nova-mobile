@@ -6,6 +6,7 @@ class TherapistDashboardState {
   final List<dynamic> pendingRequests;
   final List<dynamic> upcomingSessions;
   final List<dynamic> completedSessions;
+  final List<dynamic> pendingMessages;
   final bool isLoading;
   final String? error;
 
@@ -13,6 +14,7 @@ class TherapistDashboardState {
     required this.pendingRequests,
     required this.upcomingSessions,
     required this.completedSessions,
+    required this.pendingMessages,
     this.isLoading = false,
     this.error,
   });
@@ -21,6 +23,7 @@ class TherapistDashboardState {
     List<dynamic>? pendingRequests,
     List<dynamic>? upcomingSessions,
     List<dynamic>? completedSessions,
+    List<dynamic>? pendingMessages,
     bool? isLoading,
     String? error,
   }) {
@@ -28,6 +31,7 @@ class TherapistDashboardState {
       pendingRequests: pendingRequests ?? this.pendingRequests,
       upcomingSessions: upcomingSessions ?? this.upcomingSessions,
       completedSessions: completedSessions ?? this.completedSessions,
+      pendingMessages: pendingMessages ?? this.pendingMessages,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
@@ -48,12 +52,14 @@ class TherapistDashboardNotifier extends AsyncNotifier<TherapistDashboardState> 
         therapistService.getPanelRequests(),
         therapistService.getPanelBookings(),
         therapistService.getPanelCompletedBookings(),
+        therapistService.getPanelMessages(),
       ]);
 
       return TherapistDashboardState(
         pendingRequests: results[0],
         upcomingSessions: results[1],
         completedSessions: results[2],
+        pendingMessages: results[3],
         isLoading: false,
       );
     } catch (e) {
@@ -61,6 +67,7 @@ class TherapistDashboardNotifier extends AsyncNotifier<TherapistDashboardState> 
         pendingRequests: [],
         upcomingSessions: [],
         completedSessions: [],
+        pendingMessages: [],
         error: e.toString(),
       );
     }

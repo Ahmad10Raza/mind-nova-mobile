@@ -17,6 +17,7 @@ class CommunitySocketService {
   bool _isConnected = false;
 
   final _messageController = StreamController<Map<String, dynamic>>.broadcast();
+  final _chatHistoryController = StreamController<List<dynamic>>.broadcast();
   final _reactionController = StreamController<Map<String, dynamic>>.broadcast();
   final _handRaisedController = StreamController<Map<String, dynamic>>.broadcast();
   final _roomStateController = StreamController<Map<String, dynamic>>.broadcast();
@@ -24,6 +25,7 @@ class CommunitySocketService {
   final _participantLeftController = StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
+  Stream<List<dynamic>> get chatHistoryStream => _chatHistoryController.stream;
   Stream<Map<String, dynamic>> get reactionStream => _reactionController.stream;
   Stream<Map<String, dynamic>> get handRaisedStream => _handRaisedController.stream;
   Stream<Map<String, dynamic>> get roomStateStream => _roomStateController.stream;
@@ -47,6 +49,7 @@ class CommunitySocketService {
       .setAuth({'token': token})
       .setQuery({'roomId': roomId})
       .enableReconnection()
+      .enableForceNew() // Crucial: prevents caching the socket with an empty token
       .build());
 
     _socket!.onConnect((_) {
@@ -72,6 +75,12 @@ class CommunitySocketService {
         _messageController.add(data);
       } else if (data is Map) {
         _messageController.add(Map<String, dynamic>.from(data));
+      }
+    });
+
+    _socket!.on('chat_history', (data) {
+      if (data is List) {
+        _chatHistoryController.add(data);
       }
     });
 
@@ -171,10 +180,13 @@ class CommunitySocketService {
   }
 
   void dispose() {
+    _socket?.disconnect();
+    _socket?.destroy();
     _socket?.dispose();
     _socket = null;
     _isConnected = false;
     _messageController.close();
+    _chatHistoryController.close();
     _reactionController.close();
     _handRaisedController.close();
     _roomStateController.close();

@@ -58,12 +58,20 @@ class _TherapistDashboardScreenState extends ConsumerState<TherapistDashboardScr
                       final pendingRequests = state.pendingRequests;
                       final upcomingSessions = state.upcomingSessions;
                       final completedSessions = state.completedSessions;
+                      final pendingMessages = state.pendingMessages;
                       
                       return SliverList(
                         delegate: SliverChildListDelegate([
                           _buildWelcomeSection(pendingRequests.length, upcomingSessions.length),
                           const SizedBox(height: 32),
-                          _buildStatsRow(pendingRequests.length, upcomingSessions.length),
+                          _buildStatsRow(pendingRequests.length, upcomingSessions.length, pendingMessages.length),
+                          const SizedBox(height: 32),
+                          _buildSectionHeader('Recent Messages', pendingMessages.length.toString()),
+                          const SizedBox(height: 16),
+                          if (pendingMessages.isEmpty)
+                            _buildEmptyState('No new messages')
+                          else
+                            ...pendingMessages.map((msg) => _buildMessageCard(msg as Map<String, dynamic>)),
                           const SizedBox(height: 32),
                           _buildSectionHeader('Pending Requests', pendingRequests.length.toString()),
                           const SizedBox(height: 16),
@@ -133,15 +141,14 @@ class _TherapistDashboardScreenState extends ConsumerState<TherapistDashboardScr
     );
   }
 
-  Widget _buildStatsRow(int pendingCount, int sessionCount) {
-    final totalSessions = pendingCount + sessionCount;
+  Widget _buildStatsRow(int pendingCount, int sessionCount, int messagesCount) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('Sessions', '$totalSessions', Icons.schedule)),
+        Expanded(child: _buildStatCard('Sessions', '${pendingCount + sessionCount}', Icons.schedule)),
         const SizedBox(width: 16),
         Expanded(child: _buildStatCard('Pending', '$pendingCount', Icons.pending_actions)),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard('Today', '$sessionCount', Icons.calendar_today)),
+        Expanded(child: _buildStatCard('Messages', '$messagesCount', Icons.mail_outline)),
       ],
     );
   }
@@ -347,6 +354,27 @@ class _TherapistDashboardScreenState extends ConsumerState<TherapistDashboardScr
                   ],
                 ),
               ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white54),
+                color: const Color(0xFF1B1F2C),
+                onSelected: (value) {
+                  if (value == 'complete') {
+                    context.push('/therapist/post-session', extra: session['id']);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'complete',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: _secondaryColor, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Mark as Completed', style: GoogleFonts.inter(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -484,6 +512,89 @@ class _TherapistDashboardScreenState extends ConsumerState<TherapistDashboardScr
           const SizedBox(height: 4),
           Text(rawNotes, style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard(Map<String, dynamic> thread) {
+    final patientName = _getPatientName({'patient': thread['user']});
+    final patientId = thread['userId'] ?? (thread['user'] != null ? thread['user']['id'] : '');
+    final lastMessage = thread['lastMessage'] ?? 'No messages yet';
+    final avatarUrl = thread['user']?['profile']?['avatarUrl'];
+    
+    // Using unreadCount if the backend provides it, otherwise false
+    final unreadCount = thread['unreadCount'] ?? 0;
+    final isUnread = unreadCount > 0;
+
+    return GestureDetector(
+      onTap: () {
+        context.push('/therapist/profile/chat', extra: TherapistProfile(
+          id: patientId,
+          userId: patientId,
+          name: patientName,
+          title: 'Patient',
+          specialty: '',
+          imageUrl: avatarUrl,
+          languages: [],
+          hourlyRate: 0,
+          bio: '',
+          styleTags: [],
+          isVerified: true,
+          experienceYrs: 0,
+          rating: 5.0,
+          responseTime: '',
+        ));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isUnread ? _primaryColor.withValues(alpha: 0.1) : const Color(0xFF1B1F2C).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isUnread ? _primaryColor.withValues(alpha: 0.3) : _glassBorder),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: _secondaryColor.withValues(alpha: 0.2),
+              backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
+              child: avatarUrl == null || avatarUrl.toString().isEmpty ? Text(
+                patientName.isNotEmpty ? patientName[0].toUpperCase() : '?',
+                style: const TextStyle(color: _secondaryColor, fontWeight: FontWeight.bold, fontSize: 18),
+              ) : null,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(patientName, style: GoogleFonts.manrope(fontSize: 16, fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600, color: Colors.white)),
+                      if (isUnread)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(color: _primaryColor, borderRadius: BorderRadius.circular(10)),
+                          child: Text(unreadCount.toString(), style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: _backgroundDeep)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    lastMessage, 
+                    maxLines: 1, 
+                    overflow: TextOverflow.ellipsis, 
+                    style: GoogleFonts.inter(fontSize: 14, color: isUnread ? Colors.white : const Color(0xFFC9C4D0), fontWeight: isUnread ? FontWeight.w500 : FontWeight.normal)
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, color: Color(0xFFC9C4D0)),
+          ],
+        ),
       ),
     );
   }
