@@ -9,7 +9,7 @@ class NetworkConstants {
   /// 2. For Production: 'flutter run --dart-define=BASE_URL=https://your-api.com'
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://127.0.0.1:3001',
+    defaultValue: 'https://mind-nova-backend.onrender.com',
   );
 
   /// Helper to check if we are in production mode based on the URL

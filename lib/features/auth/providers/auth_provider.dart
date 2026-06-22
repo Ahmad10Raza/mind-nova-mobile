@@ -565,7 +565,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> logout() async {
     try {
-      await _authService.signOut();
+      await _authService.signOut().timeout(const Duration(seconds: 2));
       await StorageManager.clearAllUserData().timeout(const Duration(seconds: 2));
     } catch (e) {
       debugPrint('Logout error: $e');
