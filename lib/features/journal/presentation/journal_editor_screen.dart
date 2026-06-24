@@ -5,6 +5,12 @@ import '../providers/journal_provider.dart';
 import '../models/journal_model.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../challenges/models/challenge_model.dart';
+import '../../voice/presentation/widgets/voice_record_button.dart';
+import '../../voice/presentation/widgets/transcript_editor.dart';
+import '../../voice/data/voice_service.dart';
+import '../../profile/presentation/profile_screen.dart';
+
 class JournalEditorScreen extends ConsumerStatefulWidget {
   final JournalEntry? initialEntry;
   const JournalEditorScreen({super.key, this.initialEntry});
@@ -17,6 +23,7 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
     with SingleTickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
+  final FocusNode _contentFocusNode = FocusNode();
   bool _isFocusMode = false;
   String _currentMood = 'Neutral';
   final List<String> _tags = [];
@@ -58,6 +65,7 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _contentFocusNode.dispose();
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -165,6 +173,7 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
                         // Content field
                         TextField(
                           controller: _contentController,
+                          focusNode: _contentFocusNode,
                           maxLines: null,
                           autofocus: widget.initialEntry == null,
                           style: GoogleFonts.inter(
@@ -277,7 +286,7 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
             children: [
               Row(children: [
                 _toolBtn(Icons.image_outlined, 'Add Image', onTap: () {}),
-                _toolBtn(Icons.mic_none_rounded, 'Voice Note', onTap: () {}),
+                _toolBtn(Icons.mic_none_rounded, 'Voice Note', onTap: _showVoiceRecorder),
                 _toolBtn(Icons.mood_rounded, 'Mood', onTap: _showMoodPicker),
                 _toolBtn(Icons.tag_rounded, 'Tags', onTap: () {}),
               ]),
@@ -375,4 +384,81 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
       ),
     );
   }
+
+  void _showVoiceRecorder() {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: _surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Speak your thoughts', style: GoogleFonts.manrope(color: _onSurface, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text('We will transcribe it automatically.', style: GoogleFonts.inter(color: _onSurfaceVariant.withValues(alpha: 0.7), fontSize: 13)),
+            const SizedBox(height: 32),
+            VoiceRecordButton(
+              onRecordingComplete: (path) async {
+                Navigator.of(context, rootNavigator: true).pop(); // Close recorder
+                _processAudioFile(path);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _processAudioFile(String path) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: _primary),
+              const SizedBox(height: 16),
+              Text('Transcribing audio...', style: GoogleFonts.inter(color: _onSurface)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final keepVoice = ref.read(voiceRetentionProvider);
+      final result = await ref.read(voiceServiceProvider).transcribeAudio(
+        filePath: path,
+        featureType: 'JOURNAL',
+        keepRecording: keepVoice,
+      );
+      
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        setState(() {
+          _contentController.text = _contentController.text.isEmpty
+              ? result.transcript
+              : '${_contentController.text}\n\n${result.transcript}';
+        });
+        _contentFocusNode.requestFocus();
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
+      }
+    }
+  }
+
+
 }

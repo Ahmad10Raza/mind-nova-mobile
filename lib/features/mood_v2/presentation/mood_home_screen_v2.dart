@@ -24,6 +24,11 @@ import 'widgets/mood_correlation_insights.dart';
 import 'widgets/emotional_timeline.dart';
 import 'mood_history_screen.dart';
 
+import '../../voice/presentation/widgets/voice_record_button.dart';
+import '../../voice/presentation/widgets/transcript_editor.dart';
+import '../../voice/data/voice_service.dart';
+import '../../profile/presentation/profile_screen.dart';
+
 /// The redesigned Mood Home — an emotional intelligence surface.
 /// NOT an analytics dashboard. A reflective emotional awareness space.
 class MoodHomeScreenV2 extends ConsumerStatefulWidget {
@@ -859,11 +864,14 @@ class _EmotionalCheckinScreenState extends ConsumerState<EmotionalCheckinScreen>
   int _energyLevel = 3; // 1-5
   int _stressLevel = 3; // 1-5
   final TextEditingController _noteController = TextEditingController();
+  final FocusNode _noteFocusNode = FocusNode();
+  final List<String> _selectedTriggers = []; // 0: state, 1: levels, 2: reflection
   int _step = 0; // 0: state, 1: levels, 2: reflection
 
   @override
   void dispose() {
     _noteController.dispose();
+    _noteFocusNode.dispose();
     super.dispose();
   }
 
@@ -1250,7 +1258,8 @@ class _EmotionalCheckinScreenState extends ConsumerState<EmotionalCheckinScreen>
           ),
           child: TextField(
             controller: _noteController,
-            maxLines: 6,
+            focusNode: _noteFocusNode,
+            maxLines: 4,
             style: AppTypography.body,
             decoration: InputDecoration(
               hintText: 'What\'s on your mind? (optional)',
@@ -1260,9 +1269,71 @@ class _EmotionalCheckinScreenState extends ConsumerState<EmotionalCheckinScreen>
             ),
           ),
         ),
+        AppSpacing.v20,
+        Center(
+          child: Column(
+            children: [
+              Text('Or speak your reflection', style: AppTypography.caption.copyWith(color: AppColors.textMuted)),
+              AppSpacing.v12,
+              VoiceRecordButton(
+                onRecordingComplete: (path) {
+                  Navigator.of(context, rootNavigator: true).pop(); // Close recorder
+                  _processAudioFile(path);
+                },
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
+
+  Future<void> _processAudioFile(String path) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(color: AppSurfaces.primary, borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: AppColors.novaPurple),
+              const SizedBox(height: 16),
+              Text('Transcribing audio...', style: GoogleFonts.inter(color: AppColors.textPrimary)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final keepVoice = ref.read(voiceRetentionProvider);
+      final result = await ref.read(voiceServiceProvider).transcribeAudio(
+        filePath: path,
+        featureType: 'MOOD',
+        keepRecording: keepVoice,
+      );
+      
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        setState(() {
+          _noteController.text = _noteController.text.isEmpty
+              ? result.transcript
+              : '${_noteController.text} ${result.transcript}';
+        });
+        _noteFocusNode.requestFocus();
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
+      }
+    }
+  }
+
+
 
   bool _canProceed() {
     if (_step == 0) return _selectedState != null;

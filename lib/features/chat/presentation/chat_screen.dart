@@ -11,6 +11,12 @@ import '../models/chat_model.dart';
 import '../../safety/providers/safety_provider.dart';
 import '../../safety/models/crisis_model.dart';
 
+import '../../voice/presentation/widgets/voice_record_button.dart';
+import '../../voice/presentation/widgets/transcript_editor.dart';
+import '../../voice/data/voice_service.dart';
+import '../../profile/presentation/profile_screen.dart';
+import '../../../core/design/surfaces/app_surfaces.dart';
+
 final chatServiceProvider = NotifierProvider<ChatSocketService, ChatSocketState>(
   ChatSocketService.new,
 );
@@ -355,6 +361,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
             ),
             child: Row(
               children: [
+                GestureDetector(
+                  onTap: _showVoiceRecorder,
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 20, right: 8),
+                    child: const Icon(
+                      Icons.mic_none_rounded,
+                      color: Colors.white70,
+                      size: 24,
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: TextField(
                     controller: _controller,
@@ -373,7 +390,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
                         fontWeight: FontWeight.w300,
                       ),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
                     ),
                   ),
                 ),
@@ -409,4 +426,80 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
       ),
     );
   }
+
+  void _showVoiceRecorder() {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppSurfaces.secondary,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Speak to Nova', style: GoogleFonts.manrope(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text('I am listening...', style: GoogleFonts.inter(color: Colors.white70, fontSize: 14)),
+            const SizedBox(height: 32),
+            VoiceRecordButton(
+              onRecordingComplete: (path) async {
+                Navigator.of(context, rootNavigator: true).pop(); // Close recorder
+                _processAudioFile(path);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _processAudioFile(String path) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(color: AppSurfaces.primary, borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: AppColors.novaPurple),
+              const SizedBox(height: 16),
+              Text('Nova is processing your voice...', style: GoogleFonts.inter(color: Colors.white)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final keepVoice = ref.read(voiceRetentionProvider);
+      final result = await ref.read(voiceServiceProvider).transcribeAudio(
+        filePath: path,
+        featureType: 'NOVA',
+        keepRecording: keepVoice,
+      );
+      
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        setState(() {
+          _controller.text = _controller.text.isEmpty
+              ? result.transcript
+              : '${_controller.text} ${result.transcript}';
+        });
+        _focusNode.requestFocus();
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
+      }
+    }
+  }
+
+
 }

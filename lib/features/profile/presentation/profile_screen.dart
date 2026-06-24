@@ -21,6 +21,30 @@ import '../../../core/design/typography/app_typography.dart';
 import '../../../core/design/surfaces/app_surfaces.dart';
 import '../../../core/design/radius/app_radius.dart';
 import '../../../core/design/gradients/app_gradients.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+final voiceRetentionProvider = NotifierProvider<VoiceRetentionNotifier, bool>(() {
+  return VoiceRetentionNotifier();
+});
+
+class VoiceRetentionNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    _loadSetting();
+    return false;
+  }
+
+  Future<void> _loadSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool('keep_voice_recordings') ?? false;
+  }
+
+  Future<void> toggle(bool value) async {
+    state = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('keep_voice_recordings', value);
+  }
+}
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -672,6 +696,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Text('Settings & Control', style: AppTypography.headingLarge.copyWith(fontSize: 20, color: AppColors.textPrimary)), 
             const SizedBox(height: 16), 
             ListTile(leading: const Icon(Icons.privacy_tip_outlined, color: AppColors.textSecondary), title: Text('Data & Privacy', style: AppTypography.body.copyWith(color: AppColors.textPrimary)), onTap: () {}), 
+            Consumer(
+              builder: (context, ref, child) {
+                final keepVoice = ref.watch(voiceRetentionProvider);
+                return SwitchListTile(
+                  secondary: const Icon(Icons.record_voice_over_rounded, color: AppColors.textSecondary),
+                  title: Text('Keep Voice Recordings', style: AppTypography.body.copyWith(color: AppColors.textPrimary)),
+                  subtitle: Text(keepVoice ? 'Audio is saved securely for insights' : 'Audio is deleted immediately after processing', style: AppTypography.body.copyWith(fontSize: 12, color: AppColors.textMuted)),
+                  value: keepVoice,
+                  onChanged: (val) {
+                    ref.read(voiceRetentionProvider.notifier).toggle(val);
+                  },
+                  activeColor: AppColors.novaPurple,
+                );
+              }
+            ),
             ListTile(leading: const Icon(Icons.download_rounded, color: AppColors.textSecondary), title: Text('Export Health Report', style: AppTypography.body.copyWith(color: AppColors.textPrimary)), onTap: () {}), 
             ListTile(
               leading: const Icon(Icons.logout_rounded, color: Colors.redAccent), 
