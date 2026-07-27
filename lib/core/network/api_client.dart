@@ -3,14 +3,17 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'network_constants.dart';
+import '../../../core/network/network_constants.dart';
+import '../../features/auth/providers/auth_provider.dart';
 
 class ApiClient {
   late Dio dio;
   
+  VoidCallback? onUnauthorized;
+  
   String get baseUrl => NetworkConstants.baseUrl;
 
-  ApiClient() {
+  ApiClient({this.onUnauthorized}) {
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 300),
@@ -89,8 +92,12 @@ class ApiClient {
               // Refresh failed, clear tokens and force login
               await prefs.remove('access_token');
               await prefs.remove('refresh_token');
-              // Optional: Trigger a global logout event here via a stream or provider
+              onUnauthorized?.call();
             }
+          } else {
+            // No refresh token available, force login
+            await prefs.remove('access_token');
+            onUnauthorized?.call();
           }
         }
         return handler.next(e);
@@ -138,4 +145,10 @@ class ApiClient {
   }
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    onUnauthorized: () {
+      ref.read(authProvider.notifier).logout();
+    },
+  );
+});

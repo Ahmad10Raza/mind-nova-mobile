@@ -81,6 +81,45 @@ class VoiceService {
       throw Exception('Failed to transcribe audio: ${response.statusCode}');
     }
   }
+
+  Future<Map<String, dynamic>> createMoodFromVoice(String voiceEntryId) async {
+    final response = await _apiClient.post(
+      '/moods/voice-log',
+      data: {'voiceEntryId': voiceEntryId},
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data;
+    } else {
+      throw Exception('Failed to create mood from voice: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> analyzeEmotion(String voiceEntryId) async {
+    final response = await _apiClient.post(
+      '/voice/analyze-emotion',
+      data: {'voiceEntryId': voiceEntryId},
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data;
+    } else {
+      throw Exception('Failed to analyze emotion: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> generateTherapistNotesFromVoice(String appointmentId, String voiceEntryId, String therapistId) async {
+    final response = await _apiClient.post(
+      '/therapists/ai/post-session-voice/$appointmentId',
+      data: {
+        'voiceEntryId': voiceEntryId,
+        'therapistId': therapistId,
+      },
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data;
+    } else {
+      throw Exception('Failed to generate therapist notes: ${response.statusCode}');
+    }
+  }
 }
 
 final voiceServiceProvider = Provider<VoiceService>((ref) {

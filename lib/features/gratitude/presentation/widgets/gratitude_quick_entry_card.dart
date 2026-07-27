@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/gratitude_provider.dart';
+import '../../../voice/providers/voice_orchestrator.dart';
+import '../../../voice/providers/voice_record_provider.dart';
 
 class GratitudeQuickEntryCard extends ConsumerStatefulWidget {
   const GratitudeQuickEntryCard({super.key});
@@ -43,6 +45,40 @@ class _GratitudeQuickEntryCardState extends ConsumerState<GratitudeQuickEntryCar
     });
   }
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  void _toggleInlineRecording() async {
+    final recordNotifier = ref.read(voiceRecordProvider.notifier);
+    final recordState = ref.read(voiceRecordProvider);
+    final orchestratorNotifier = ref.read(voiceOrchestratorProvider.notifier);
+
+    if (recordState.state == RecordState.recording) {
+      final path = await recordNotifier.stopRecording();
+      if (path != null) {
+        await orchestratorNotifier.processRecording(
+          audioPath: path,
+          mode: VoiceMode.gratitude,
+        );
+        final transcript = ref.read(voiceOrchestratorProvider).transcript;
+        if (transcript != null) {
+          setState(() {
+            _controller.text = _controller.text.isEmpty
+                ? transcript
+                : '${_controller.text} $transcript';
+          });
+        }
+      }
+    } else {
+      orchestratorNotifier.reset();
+      await recordNotifier.startRecording();
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -51,6 +87,9 @@ class _GratitudeQuickEntryCardState extends ConsumerState<GratitudeQuickEntryCar
 
   @override
   Widget build(BuildContext context) {
+    final isRecording = ref.watch(voiceRecordProvider).state == RecordState.recording;
+    final isProcessing = ref.watch(voiceOrchestratorProvider).isProcessing;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -123,12 +162,64 @@ class _GratitudeQuickEntryCardState extends ConsumerState<GratitudeQuickEntryCar
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.mic_rounded, color: Color(0xFFC9C4D8)),
-                tooltip: 'Voice Input',
-              ),
-              ElevatedButton(
+              if (isRecording || isProcessing)
+                Expanded(
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: isProcessing ? null : _toggleInlineRecording,
+                        child: Container(
+                          width: 44, height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isProcessing ? Colors.white.withOpacity(0.05) : const Color(0xFFFF6B6B).withOpacity(0.2),
+                          ),
+                          child: Icon(
+                            isProcessing ? Icons.hourglass_empty : Icons.stop_rounded,
+                            color: isProcessing ? const Color(0xFFCBC3D7) : const Color(0xFFFF6B6B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      if (isRecording)
+                        Text(
+                          'Recording... ${_formatDuration(ref.watch(voiceRecordProvider).duration)}',
+                          style: GoogleFonts.inter(color: const Color(0xFFFF6B6B), fontSize: 14, fontWeight: FontWeight.w600),
+                        )
+                      else if (isProcessing)
+                        Text(
+                          'Transcribing...',
+                          style: GoogleFonts.inter(color: const Color(0xFF44E2CD), fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                    ],
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: _toggleInlineRecording,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8A2387), Color(0xFFE94057), Color(0xFFF27121)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFE94057).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.mic_rounded, color: Colors.white, size: 24),
+                  ),
+                ),
+              if (!isRecording && !isProcessing)
+                ElevatedButton(
                 onPressed: () async {
                   final text = _controller.text.trim();
                   if (text.isEmpty && _selectedChips.isEmpty) return; // Ignore empty saves

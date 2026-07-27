@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/community_providers.dart';
+import '../../../voice/providers/voice_orchestrator.dart';
+import '../../../voice/providers/voice_record_provider.dart';
 
 class CreatePostSheet extends ConsumerStatefulWidget {
   const CreatePostSheet({super.key});
@@ -77,8 +79,45 @@ class _CreatePostSheetState extends ConsumerState<CreatePostSheet> {
     }
   }
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  void _toggleInlineRecording() async {
+    final recordNotifier = ref.read(voiceRecordProvider.notifier);
+    final recordState = ref.read(voiceRecordProvider);
+    final orchestratorNotifier = ref.read(voiceOrchestratorProvider.notifier);
+
+    if (recordState.state == RecordState.recording) {
+      final path = await recordNotifier.stopRecording();
+      if (path != null) {
+        await orchestratorNotifier.processRecording(
+          audioPath: path,
+          mode: VoiceMode.community,
+        );
+        final transcript = ref.read(voiceOrchestratorProvider).transcript;
+        if (transcript != null) {
+          setState(() {
+            _controller.text = _controller.text.isEmpty
+                ? transcript
+                : '${_controller.text}\n\n$transcript';
+          });
+        }
+      }
+    } else {
+      orchestratorNotifier.reset();
+      await recordNotifier.startRecording();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isRecording = ref.watch(voiceRecordProvider).state == RecordState.recording;
+    final isProcessing = ref.watch(voiceOrchestratorProvider).isProcessing;
+    
     // Handling keyboard padding so it pushes up
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
@@ -198,9 +237,48 @@ class _CreatePostSheetState extends ConsumerState<CreatePostSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     child: Row(
                       children: [
-                        _buildEditorAction(Icons.image_outlined, 'Add Media'),
-                        _buildEditorAction(Icons.emoji_emotions_outlined, 'Add Emoji'),
-                        _buildEditorAction(Icons.tag_rounded, 'Add Topic'),
+                        if (isRecording || isProcessing)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: isProcessing ? null : _toggleInlineRecording,
+                                  child: Container(
+                                    width: 40, height: 40,
+                                    margin: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isProcessing ? Colors.white.withOpacity(0.05) : const Color(0xFFFF6B6B).withOpacity(0.2),
+                                    ),
+                                    child: Icon(
+                                      isProcessing ? Icons.hourglass_empty : Icons.stop_rounded,
+                                      color: isProcessing ? const Color(0xFFCBC3D7) : const Color(0xFFFF6B6B),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (isRecording)
+                                  Text(
+                                    'Recording... ${_formatDuration(ref.watch(voiceRecordProvider).duration)}',
+                                    style: GoogleFonts.inter(color: const Color(0xFFFF6B6B), fontSize: 14, fontWeight: FontWeight.w600),
+                                  )
+                                else if (isProcessing)
+                                  Text(
+                                    'Transcribing...',
+                                    style: GoogleFonts.inter(color: const Color(0xFF44E2CD), fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                              ],
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              _buildEditorAction(Icons.image_outlined, 'Add Media', onTap: null),
+                              _buildEditorAction(Icons.mic_none_rounded, 'Voice Note', onTap: _toggleInlineRecording),
+                              _buildEditorAction(Icons.emoji_emotions_outlined, 'Add Emoji', onTap: null),
+                              _buildEditorAction(Icons.tag_rounded, 'Add Topic', onTap: null),
+                            ],
+                          ),
                         const Spacer(),
                       ],
                     ),
@@ -272,11 +350,11 @@ class _CreatePostSheetState extends ConsumerState<CreatePostSheet> {
     );
   }
 
-  Widget _buildEditorAction(IconData icon, String tooltip) {
+  Widget _buildEditorAction(IconData icon, String tooltip, {VoidCallback? onTap}) {
     return IconButton(
       icon: Icon(icon, color: const Color(0xFFCBC3D7), size: 24),
       tooltip: tooltip,
-      onPressed: () {
+      onPressed: onTap ?? () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$tooltip coming soon!', style: GoogleFonts.manrope(color: Colors.white)),

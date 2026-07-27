@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/api_client.dart';
+import '../../voice/presentation/widgets/voice_orb_recorder.dart';
+import '../../voice/providers/voice_orchestrator.dart';
 
 // Colors & Constants
 const _backgroundDeep = Color(0xFF0F131F);
@@ -59,6 +61,42 @@ class _TherapistNotesScreenState extends ConsumerState<TherapistNotesScreen> {
                         Text('Session Wrap-Up', style: GoogleFonts.manrope(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white)),
                         const SizedBox(height: 8),
                         Text('Document notes for ${widget.patientName}', style: GoogleFonts.inter(fontSize: 16, color: const Color(0xFFC9C4D0))),
+                        const SizedBox(height: 24),
+                        
+                        // Voice Dictation Section
+                        Center(
+                          child: Column(
+                            children: [
+                              Text('Dictate Session Notes', style: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w600, color: _primaryColor)),
+                              const SizedBox(height: 16),
+                              VoiceOrbRecorder(
+                                mode: VoiceMode.therapist,
+                                appointmentId: widget.appointmentId,
+                                therapistId: 'CURRENT_THERAPIST_ID', // Usually fetched from auth provider
+                                onComplete: (transcript) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Voice notes structured and saved automatically!"),
+                                      backgroundColor: _secondaryColor,
+                                    ),
+                                  );
+                                  context.pop(); // Automatically go back
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        Row(
+                          children: [
+                            const Expanded(child: Divider(color: _glassBorder)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text('OR TYPE MANUALLY', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFFC9C4D0))),
+                            ),
+                            const Expanded(child: Divider(color: _glassBorder)),
+                          ],
+                        ),
                         const SizedBox(height: 32),
                         
                         _buildInputField('Clinical Summary (Private)', _summaryController, maxLines: 4),

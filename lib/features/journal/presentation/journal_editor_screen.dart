@@ -6,8 +6,10 @@ import '../models/journal_model.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../challenges/models/challenge_model.dart';
-import '../../voice/presentation/widgets/voice_record_button.dart';
+import '../../voice/presentation/widgets/voice_orb_recorder.dart';
+import '../../voice/providers/voice_orchestrator.dart';
 import '../../voice/presentation/widgets/transcript_editor.dart';
+import '../../voice/providers/voice_record_provider.dart';
 import '../../voice/data/voice_service.dart';
 import '../../profile/presentation/profile_screen.dart';
 
@@ -272,6 +274,9 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
   }
 
   Widget _buildBottomBar() {
+    final isRecording = ref.watch(voiceRecordProvider).state == RecordState.recording;
+    final isProcessing = ref.watch(voiceOrchestratorProvider).isProcessing;
+    
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -284,16 +289,50 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(children: [
-                _toolBtn(Icons.image_outlined, 'Add Image', onTap: () {}),
-                _toolBtn(Icons.mic_none_rounded, 'Voice Note', onTap: _showVoiceRecorder),
-                _toolBtn(Icons.mood_rounded, 'Mood', onTap: _showMoodPicker),
-                _toolBtn(Icons.tag_rounded, 'Tags', onTap: () {}),
-              ]),
-              Text(
-                '$_wordCount words',
-                style: GoogleFonts.inter(color: _onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w500),
-              ),
+              if (isRecording || isProcessing)
+                Expanded(
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: isProcessing ? null : _toggleInlineRecording,
+                        child: Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isProcessing ? _surface : const Color(0xFFFF6B6B).withValues(alpha: 0.2),
+                          ),
+                          child: Icon(
+                            isProcessing ? Icons.hourglass_empty : Icons.stop_rounded,
+                            color: isProcessing ? _onSurfaceVariant : const Color(0xFFFF6B6B),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      if (isRecording)
+                        Text(
+                          'Recording... ${_formatDuration(ref.watch(voiceRecordProvider).duration)}',
+                          style: GoogleFonts.inter(color: const Color(0xFFFF6B6B), fontSize: 14, fontWeight: FontWeight.w600),
+                        )
+                      else if (isProcessing)
+                        Text(
+                          'Transcribing...',
+                          style: GoogleFonts.inter(color: _primary, fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                    ],
+                  ),
+                )
+              else
+                Row(children: [
+                  _toolBtn(Icons.image_outlined, 'Add Image', onTap: () {}),
+                  _toolBtn(Icons.mic_none_rounded, 'Voice Note', onTap: _toggleInlineRecording),
+                  _toolBtn(Icons.mood_rounded, 'Mood', onTap: _showMoodPicker),
+                  _toolBtn(Icons.tag_rounded, 'Tags', onTap: () {}),
+                ]),
+              if (!isRecording && !isProcessing)
+                Text(
+                  '$_wordCount words',
+                  style: GoogleFonts.inter(color: _onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w500),
+                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -385,80 +424,41 @@ class _JournalEditorScreenState extends ConsumerState<JournalEditorScreen>
     );
   }
 
-  void _showVoiceRecorder() {
-    showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: _surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Speak your thoughts', style: GoogleFonts.manrope(color: _onSurface, fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text('We will transcribe it automatically.', style: GoogleFonts.inter(color: _onSurfaceVariant.withValues(alpha: 0.7), fontSize: 13)),
-            const SizedBox(height: 32),
-            VoiceRecordButton(
-              onRecordingComplete: (path) async {
-                Navigator.of(context, rootNavigator: true).pop(); // Close recorder
-                _processAudioFile(path);
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
-  Future<void> _processAudioFile(String path) async {
-    // Show loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(color: _primary),
-              const SizedBox(height: 16),
-              Text('Transcribing audio...', style: GoogleFonts.inter(color: _onSurface)),
-            ],
-          ),
-        ),
-      ),
-    );
+  void _toggleInlineRecording() async {
+    final recordNotifier = ref.read(voiceRecordProvider.notifier);
+    final recordState = ref.read(voiceRecordProvider);
+    final orchestratorNotifier = ref.read(voiceOrchestratorProvider.notifier);
 
-    try {
-      final keepVoice = ref.read(voiceRetentionProvider);
-      final result = await ref.read(voiceServiceProvider).transcribeAudio(
-        filePath: path,
-        featureType: 'JOURNAL',
-        keepRecording: keepVoice,
-      );
-      
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-        setState(() {
-          _contentController.text = _contentController.text.isEmpty
-              ? result.transcript
-              : '${_contentController.text}\n\n${result.transcript}';
-        });
-        _contentFocusNode.requestFocus();
+    if (recordState.state == RecordState.recording) {
+      final path = await recordNotifier.stopRecording();
+      if (path != null) {
+        await orchestratorNotifier.processRecording(
+          audioPath: path,
+          mode: VoiceMode.journal,
+        );
+        final transcript = ref.read(voiceOrchestratorProvider).transcript;
+        if (transcript != null) {
+          setState(() {
+            _contentController.text = _contentController.text.isEmpty
+                ? transcript
+                : '${_contentController.text}\n\n$transcript';
+          });
+          _contentFocusNode.requestFocus();
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
-      }
+    } else {
+      orchestratorNotifier.reset();
+      await recordNotifier.startRecording();
     }
   }
+
 
 
 }

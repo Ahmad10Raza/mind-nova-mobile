@@ -11,11 +11,13 @@ import '../models/chat_model.dart';
 import '../../safety/providers/safety_provider.dart';
 import '../../safety/models/crisis_model.dart';
 
-import '../../voice/presentation/widgets/voice_record_button.dart';
+import '../../voice/presentation/widgets/voice_orb_recorder.dart';
+import '../../voice/providers/voice_orchestrator.dart';
 import '../../voice/presentation/widgets/transcript_editor.dart';
 import '../../voice/data/voice_service.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../../core/design/surfaces/app_surfaces.dart';
+import '../../voice/providers/voice_record_provider.dart';
 
 final chatServiceProvider = NotifierProvider<ChatSocketService, ChatSocketState>(
   ChatSocketService.new,
@@ -362,37 +364,72 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: _showVoiceRecorder,
+                  onTap: _toggleInlineRecording,
                   child: Container(
                     padding: const EdgeInsets.only(left: 20, right: 8),
-                    child: const Icon(
-                      Icons.mic_none_rounded,
-                      color: Colors.white70,
+                    child: Icon(
+                      ref.watch(voiceRecordProvider).state == RecordState.recording 
+                          ? Icons.stop_circle_rounded 
+                          : Icons.mic_none_rounded,
+                      color: ref.watch(voiceRecordProvider).state == RecordState.recording 
+                          ? AppColors.novaPurple 
+                          : Colors.white70,
                       size: 24,
                     ),
                   ),
                 ),
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    onSubmitted: (_) => _sendMessage(),
-                    style: GoogleFonts.manrope(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w300,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Type your thoughts...',
-                      hintStyle: GoogleFonts.manrope(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontWeight: FontWeight.w300,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
-                    ),
-                  ),
+                  child: ref.watch(voiceRecordProvider).state == RecordState.recording
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.novaPurple,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Recording... ${_formatDuration(ref.watch(voiceRecordProvider).duration)}',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 16,
+                                  color: AppColors.novaPurple,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          onSubmitted: (_) => _sendMessage(),
+                          style: GoogleFonts.manrope(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w300,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: ref.watch(voiceOrchestratorProvider).isProcessing 
+                                ? 'Analyzing voice...' 
+                                : 'Type your thoughts...',
+                            hintStyle: GoogleFonts.manrope(
+                              fontSize: 16,
+                              color: ref.watch(voiceOrchestratorProvider).isProcessing 
+                                  ? AppColors.novaPurpleLight 
+                                  : Colors.white.withValues(alpha: 0.4),
+                              fontWeight: ref.watch(voiceOrchestratorProvider).isProcessing 
+                                  ? FontWeight.w500 
+                                  : FontWeight.w300,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+                          ),
+                        ),
                 ),
                 GestureDetector(
                   onTap: _sendMessage,
@@ -427,77 +464,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with TickerProviderStat
     );
   }
 
-  void _showVoiceRecorder() {
-    showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      backgroundColor: AppSurfaces.secondary,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Speak to Nova', style: GoogleFonts.manrope(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text('I am listening...', style: GoogleFonts.inter(color: Colors.white70, fontSize: 14)),
-            const SizedBox(height: 32),
-            VoiceRecordButton(
-              onRecordingComplete: (path) async {
-                Navigator.of(context, rootNavigator: true).pop(); // Close recorder
-                _processAudioFile(path);
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
-  Future<void> _processAudioFile(String path) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: AppSurfaces.primary, borderRadius: BorderRadius.circular(16)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(color: AppColors.novaPurple),
-              const SizedBox(height: 16),
-              Text('Nova is processing your voice...', style: GoogleFonts.inter(color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-    );
+  void _toggleInlineRecording() async {
+    final recordNotifier = ref.read(voiceRecordProvider.notifier);
+    final recordState = ref.read(voiceRecordProvider);
+    final orchestratorNotifier = ref.read(voiceOrchestratorProvider.notifier);
 
-    try {
-      final keepVoice = ref.read(voiceRetentionProvider);
-      final result = await ref.read(voiceServiceProvider).transcribeAudio(
-        filePath: path,
-        featureType: 'NOVA',
-        keepRecording: keepVoice,
-      );
-      
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-        setState(() {
-          _controller.text = _controller.text.isEmpty
-              ? result.transcript
-              : '${_controller.text} ${result.transcript}';
-        });
-        _focusNode.requestFocus();
+    if (recordState.state == RecordState.recording) {
+      final path = await recordNotifier.stopRecording();
+      if (path != null) {
+        await orchestratorNotifier.processRecording(
+          audioPath: path,
+          mode: VoiceMode.nova,
+        );
+        final transcript = ref.read(voiceOrchestratorProvider).transcript;
+        if (transcript != null) {
+          setState(() {
+            _controller.text = _controller.text.isEmpty
+                ? transcript
+                : '${_controller.text} $transcript';
+          });
+          _focusNode.requestFocus();
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
-      }
+    } else {
+      orchestratorNotifier.reset();
+      await recordNotifier.startRecording();
     }
   }
 

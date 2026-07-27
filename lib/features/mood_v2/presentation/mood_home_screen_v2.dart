@@ -17,6 +17,8 @@ import '../../mood/models/mood_model.dart';
 import '../../mood/providers/mood_log_provider.dart';
 import '../../mood/providers/analytics_provider.dart';
 import '../../mood/data/mood_theme_mapper.dart';
+import '../../voice/presentation/widgets/voice_orb_recorder.dart';
+import '../../voice/providers/voice_orchestrator.dart';
 
 import '../data/emotional_states.dart';
 import 'widgets/mood_hero_section.dart';
@@ -202,34 +204,55 @@ class _MoodHomeScreenV2State extends ConsumerState<MoodHomeScreenV2> {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  if (data.hasData)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF44E2CD).withOpacity(0.1),
-                        border: Border.all(color: const Color(0xFF44E2CD).withOpacity(0.2)),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(isGrowing ? Icons.trending_up : Icons.trending_flat, color: const Color(0xFF44E2CD), size: 16),
-                          const SizedBox(width: 8),
-                          Text(isGrowing ? 'Growing' : 'Stable', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF44E2CD))),
-                        ],
-                      ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (data.hasData)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF44E2CD).withOpacity(0.1),
+                              border: Border.all(color: const Color(0xFF44E2CD).withOpacity(0.2)),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(isGrowing ? Icons.trending_up : Icons.trending_flat, color: const Color(0xFF44E2CD), size: 16),
+                                const SizedBox(width: 8),
+                                Text(isGrowing ? 'Growing' : 'Stable', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF44E2CD))),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmotionalCheckinScreen())),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFCABEFF),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Text('Manual Check-in', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF2A0088))),
+                          ),
+                        ),
+                      ],
                     ),
-                  if (data.hasData) const SizedBox(width: 24),
-                  GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EmotionalCheckinScreen())),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFCABEFF),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text('Check In', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF2A0088))),
-                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  VoiceOrbRecorder(
+                    mode: VoiceMode.mood,
+                    onComplete: (transcript) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Mood successfully logged via voice!"),
+                          backgroundColor: Color(0xFF44E2CD),
+                        ),
+                      );
+                      // Force refresh the dashboard data
+                      ref.invalidate(moodAnalyticsSummaryProvider);
+                    },
                   ),
                 ],
               ),
