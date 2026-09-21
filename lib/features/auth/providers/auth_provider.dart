@@ -127,13 +127,14 @@ class AuthNotifier extends Notifier<AuthState> {
       final String? savedUserId = prefs.getString('userId');
       final String? guestUuid = prefs.getString('guest_uuid');
 
-      // Guest session takes absolute priority if the flag is set.
-      if (isAnon && guestUuid != null) {
+      // Anonymous session takes absolute priority if the flag is set.
+      if (isAnon && (guestUuid != null || savedUserId != null)) {
+        final anonId = guestUuid ?? savedUserId!;
         state = state.copyWith(
           status: AuthStatus.anonymous, 
-          userId: guestUuid,
-          displayName: prefs.getString('userName') ?? 'Guest',
-          profileCompleted: profileDone,
+          userId: anonId,
+          displayName: prefs.getString('userName') ?? 'Anonymous',
+          profileCompleted: true,
         );
         return;
       }
@@ -478,36 +479,72 @@ class AuthNotifier extends Notifier<AuthState> {
     
     final prefs = await SharedPreferences.getInstance();
     
-    // Generate a unique local identity for the guest session if none exists
+    // Generate a unique local identity for the anonymous session if none exists
     final String deviceId = const Uuid().v4();
     
-    // Request a session from the backend
-    final result = await _authService.loginAnonymously(deviceId: deviceId);
-    
-    if (result.success) {
-      await _saveSession(
-        userId: result.userId!,
-        email: null,
-        displayName: 'Guest',
-        profileCompleted: false,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        avatarUrl: result.avatarUrl,
-      );
+    try {
+      // Request a session from the backend
+      final result = await _authService.loginAnonymously(deviceId: deviceId);
       
+      if (result.success && result.userId != null) {
+        await _saveSession(
+          userId: result.userId!,
+          email: null,
+          displayName: 'Anonymous',
+          profileCompleted: true,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          avatarUrl: result.avatarUrl,
+        );
+        await prefs.setString('guest_uuid', result.userId!);
+        await prefs.setBool('isAnonymous', true);
+        
+        state = state.copyWith(
+          status: AuthStatus.anonymous,
+          userId: result.userId,
+          displayName: 'Anonymous',
+          profileCompleted: true,
+          avatarUrl: result.avatarUrl,
+          isLoading: false,
+        );
+      } else {
+        // Fallback to local anonymous session if backend is temporarily offline
+        final fallbackUserId = 'anon-$deviceId';
+        await _saveSession(
+          userId: fallbackUserId,
+          email: null,
+          displayName: 'Anonymous',
+          profileCompleted: true,
+        );
+        await prefs.setString('guest_uuid', fallbackUserId);
+        await prefs.setBool('isAnonymous', true);
+
+        state = state.copyWith(
+          status: AuthStatus.anonymous,
+          userId: fallbackUserId,
+          displayName: 'Anonymous',
+          profileCompleted: true,
+          isLoading: false,
+        );
+      }
+    } catch (_) {
+      // Fallback to local anonymous session so user is never blocked
+      final fallbackUserId = 'anon-$deviceId';
+      await _saveSession(
+        userId: fallbackUserId,
+        email: null,
+        displayName: 'Anonymous',
+        profileCompleted: true,
+      );
+      await prefs.setString('guest_uuid', fallbackUserId);
+      await prefs.setBool('isAnonymous', true);
+
       state = state.copyWith(
         status: AuthStatus.anonymous,
-        userId: result.userId,
-        displayName: 'Guest',
-        profileCompleted: false,
-        avatarUrl: result.avatarUrl,
+        userId: fallbackUserId,
+        displayName: 'Anonymous',
+        profileCompleted: true,
         isLoading: false,
-      );
-    } else {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: result.errorMessage,
-        status: AuthStatus.unauthenticated,
       );
     }
   }

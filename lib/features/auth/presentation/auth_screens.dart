@@ -6,7 +6,6 @@ import '../providers/auth_provider.dart';
 import '../../../core/design/colors/app_colors.dart';
 import 'forgot_password_bottom_sheet.dart';
 import 'widgets/auth_text_field.dart';
-import 'widgets/social_auth_button.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 //  LOGIN SCREEN
@@ -28,7 +27,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  bool _isGoogleLoading = false;
   bool _isEmailLoading = false;
 
   @override
@@ -75,8 +73,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
     // Listen for errors
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.errorMessage != null) {
@@ -154,40 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         color: AppColors.novaPurpleLight,
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // ─── Social Login ───
-                    SocialAuthButton.mobile(
-                      onPressed: () => context.push('/phone-auth'),
-                      isLoading: authState.isLoading,
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildDivider('OR'),
-                    const SizedBox(height: 24),
-
-                    SocialAuthButton.google(
-                      onPressed: () async {
-                        setState(() => _isGoogleLoading = true);
-                        await ref.read(authProvider.notifier).signInWithGoogle();
-                        if (mounted) setState(() => _isGoogleLoading = false);
-                      },
-                      isLoading: _isGoogleLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Don't worry, you stay anonymous even\nwith social login.",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildDivider('OR'),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
 
                     // ─── Form ───
                     Form(
@@ -196,8 +159,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         children: [
                           AuthTextField(
                             controller: _emailController,
-                            hintText: 'User Name / Email Address',
-                            prefixIcon: Icons.person_outline,
+                            hintText: 'Email Address',
+                            prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             isUnderline: true,
                             validator: (v) {
@@ -293,18 +256,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    TextButton(
-                      onPressed: () => ref.read(authProvider.notifier).loginAnonymously(),
-                      child: Text(
-                        'Skip for now (Continue as Guest)',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -313,26 +264,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDivider(String label) {
-    return Row(
-      children: [
-        Expanded(child: Container(height: 1.5, color: AppColors.textPrimary)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-        Expanded(child: Container(height: 1.5, color: AppColors.textPrimary)),
-      ],
     );
   }
 }
@@ -359,8 +290,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  bool _isGoogleLoading = false;
-  bool _isMobileLoading = false;
   bool _isSignupLoading = false;
 
   @override
@@ -410,8 +339,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -488,29 +415,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                         color: AppColors.novaPurpleLight,
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // ─── Social Login ───
-                    SocialAuthButton.google(
-                      onPressed: () async {
-                        setState(() => _isGoogleLoading = true);
-                        await ref.read(authProvider.notifier).signInWithGoogle();
-                        if (mounted) setState(() => _isGoogleLoading = false);
-                      },
-                      isLoading: _isGoogleLoading,
-                    ),
-                    const SizedBox(height: 12),
-                    SocialAuthButton.mobile(
-                      onPressed: () async {
-                        // For mobile we just navigate, but let's keep consistent
-                        context.push('/phone-auth');
-                      },
-                      isLoading: _isMobileLoading,
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildDivider('OR'),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
 
                     // ─── Form ───
                     Form(
@@ -630,26 +535,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDivider(String label) {
-    return Row(
-      children: [
-        Expanded(child: Container(height: 1.5, color: AppColors.textPrimary)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-        Expanded(child: Container(height: 1.5, color: AppColors.textPrimary)),
-      ],
     );
   }
 }

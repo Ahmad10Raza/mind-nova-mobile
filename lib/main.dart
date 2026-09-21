@@ -23,8 +23,12 @@ void main() async {
     JustAudioMediaKit.ensureInitialized();
   }
 
-  await LocalNotificationService.initialize();
-  await LocalNotificationService.scheduleWeeklyReportNotification();
+  try {
+    await LocalNotificationService.initialize();
+    await LocalNotificationService.scheduleWeeklyReportNotification();
+  } catch (e) {
+    debugPrint("LocalNotificationService error: $e");
+  }
   
   try {
     if (kIsWeb || (!Platform.isLinux && !Platform.isWindows)) {

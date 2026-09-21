@@ -64,12 +64,22 @@ class _GratitudeQuickEntryCardState extends ConsumerState<GratitudeQuickEntryCar
           audioPath: path,
           mode: VoiceMode.gratitude,
         );
-        final transcript = ref.read(voiceOrchestratorProvider).transcript;
-        if (transcript != null) {
+        
+        final orchestratorState = ref.read(voiceOrchestratorProvider);
+        if (orchestratorState.errorMessage != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Transcription failed: ${orchestratorState.errorMessage}'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        } else if (orchestratorState.transcript != null) {
           setState(() {
             _controller.text = _controller.text.isEmpty
-                ? transcript
-                : '${_controller.text} $transcript';
+                ? orchestratorState.transcript!
+                : '${_controller.text} ${orchestratorState.transcript}';
           });
         }
       }

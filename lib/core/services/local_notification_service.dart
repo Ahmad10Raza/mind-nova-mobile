@@ -77,16 +77,20 @@ class LocalNotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    await _notificationsPlugin.zonedSchedule(
-      101,
-      'Your Weekly MindNova Insight is Ready ✨',
-      'Tap to review your activity, mood trends, and AI personalized recommendations for the week.',
-      scheduledDate,
-      platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      payload: 'weekly_insight',
-    );
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        101,
+        'Your Weekly MindNova Insight is Ready ✨',
+        'Tap to review your activity, mood trends, and AI personalized recommendations for the week.',
+        scheduledDate,
+        platformChannelSpecifics,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        payload: 'weekly_insight',
+      );
+    } catch (e) {
+      debugPrint('Failed to schedule weekly report notification: $e');
+    }
   }
 }

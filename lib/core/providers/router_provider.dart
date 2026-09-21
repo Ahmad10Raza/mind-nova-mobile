@@ -190,6 +190,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (status == AuthStatus.authenticated || status == AuthStatus.anonymous) {
         // If on an auth screen, redirect appropriately
         if (onAuthScreen) {
+          // Anonymous users bypass onboarding directly to home
+          if (status == AuthStatus.anonymous) {
+            return '/';
+          }
           // New user who hasn't completed profile setup
           if (!authState.profileCompleted) {
             return '/mental-health-onboarding';
@@ -198,7 +202,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
 
         // If profile not completed and NOT already on the setup screen
-        if (!authState.profileCompleted && !onProfileSetup) {
+        if (status != AuthStatus.anonymous && !authState.profileCompleted && !onProfileSetup) {
           return '/mental-health-onboarding';
         }
 

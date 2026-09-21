@@ -9,6 +9,21 @@ class WelcomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    ref.listen<AuthState>(authProvider, (prev, next) {
+      if (next.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: const Color(0xFFFF3B30),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -58,20 +73,30 @@ class WelcomeScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {
-                      // Trigger anonymous login and bypass onboarding
-                      ref.read(authProvider.notifier).loginAnonymously();
-                    },
+                    onPressed: authState.isLoading
+                        ? null
+                        : () {
+                            ref.read(authProvider.notifier).loginAnonymously();
+                          },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.novaPurpleLight),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    child: const Text(
-                      'Continue as Guest',
-                      style: TextStyle(color: AppColors.novaPurpleLight),
-                    ),
+                    child: authState.isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.novaPurpleLight,
+                            ),
+                          )
+                        : const Text(
+                            'Continue as Anonymous',
+                            style: TextStyle(color: AppColors.novaPurpleLight),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
