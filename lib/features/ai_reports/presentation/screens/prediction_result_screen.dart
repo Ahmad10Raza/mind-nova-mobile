@@ -65,7 +65,7 @@ class PredictionResultScreen extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Try Again Later'),
+                  label: const Text('Go Back & Retry'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: themeColor,
                     foregroundColor: Colors.white,
